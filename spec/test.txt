@@ -1,0 +1,20 @@
+CONSTANTS:
+    D_platoon       := 10
+    RSSI_net        := 60
+    ZERO            := 0
+    MAX_STEERING    := 1
+
+GOAL:
+	NAME:
+		communication_leader
+	VARIABLES:
+		sig_network         := BOOL
+		sig_rssi            := REAL
+		velocity_lea        := REAL
+		steering_lea        := REAL
+	ASSUMPTIONS:
+		sig_rssi > RSSI_net
+	GUARANTEES:
+        steering_lea >= -MAX_STEERING
+
+ENDGOALS

@@ -1,0 +1,107 @@
+CONSTANTS:
+    D_platoon       := 10
+    RSSI_net        := 60
+    ZERO            := 0
+    MAX_STEERING    := 1
+
+GOAL:
+	NAME:
+		accelerate_distance
+    DESCRIPTION:
+        accelerate when the distance from the car in front is more than the desired distance
+    VARIABLES:
+		distance_front      := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		distance_front > D_platoon
+	GUARANTEES:
+		velocity_ego_tnext > velocity_ego_t
+
+GOAL:
+	NAME:
+		decelerate_distance
+	DESCRIPTION:
+        accelerate when the distance from the car in front is more than the desired distance
+	VARIABLES:
+		distance_front      := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		distance_front < D_platoon
+	GUARANTEES:
+		velocity_ego_tnext < velocity_ego_t
+
+GOAL:
+	NAME:
+		maintainspeed_distance
+	DESCRIPTION:
+        maintain the speed when the distance from the car in front is equal to the desired distance
+	VARIABLES:
+		distance_front      := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		distance_front == D_platoon
+	GUARANTEES:
+		velocity_ego_tnext == velocity_ego_t
+
+GOAL:
+	NAME:
+		accelerate_follow
+	DESCRIPTION:
+        accelerate when the leader accelerates
+	VARIABLES:
+		velocity_lea        := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		velocity_ego_t < velocity_lea
+	GUARANTEES:
+		velocity_ego_tnext > velocity_ego_t
+
+GOAL:
+	NAME:
+		decelerate_follow
+	DESCRIPTION:
+        decelerate when the leader decelerates
+	VARIABLES:
+		velocity_lea        := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		velocity_ego_t > velocity_lea
+	GUARANTEES:
+		velocity_ego_tnext < velocity_ego_t
+
+GOAL:
+	NAME:
+		maintainspeed_follow
+	DESCRIPTION:
+        maintain the speed when the leader maintains the speed
+	VARIABLES:
+		velocity_lea        := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		velocity_ego_t == velocity_lea
+	GUARANTEES:
+		velocity_ego_tnext == velocity_ego_t
+
+GOAL:
+	NAME:
+		communication_leader
+	VARIABLES:
+		sig_network         := BOOL
+		sig_rssi            := REAL
+		velocity_lea        := REAL
+		steering_lea        := REAL
+	ASSUMPTIONS:
+		sig_network
+		sig_rssi > RSSI_net
+	GUARANTEES:
+		velocity_lea >= ZERO
+		steering_lea <= MAX_STEERING
+        steering_lea >= -MAX_STEERING
+
+ENDGOALS
