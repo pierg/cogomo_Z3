@@ -1,5 +1,6 @@
 from src.cgtgoal import CGTGoal
 from src.sat_checks import *
+from src.contract import *
 
 import itertools
 
@@ -11,7 +12,7 @@ class WrongParametersError(Exception):
     pass
 
 
-def compose_goals(list_of_goal, name=None, description="", abstract_on_guarantees=None):
+def compose_goals(list_of_goal, name=None, description=""):
     """
 
     :param name: Name of the goal
@@ -20,7 +21,6 @@ def compose_goals(list_of_goal, name=None, description="", abstract_on_guarantee
     """
 
     contracts = {}
-    abstracted_contracts = {}
 
     for goal in list_of_goal:
         contracts[goal.get_name()] = goal.get_contracts()
@@ -32,9 +32,7 @@ def compose_goals(list_of_goal, name=None, description="", abstract_on_guarantee
 
     composed_contract_list = []
     for contracts in composition_contracts:
-        satis, composed_contract = compose_contracts(contracts, abstract_on_guarantees=abstract_on_guarantees)
-        if not satis:
-            raise Exception("Composition Failed")
+        composed_contract = compose_contracts(contracts)
         composed_contract_list.append(composed_contract)
 
 
@@ -61,9 +59,7 @@ def conjoin_goals(goals, name="", description=""):
     # Flattening list
     conjoined_contracts = [item for sublist in conjoined_contracts for item in sublist]
 
-    sat = conjoin_contracts(conjoined_contracts)
-    if not sat:
-        raise Exception("Conjunction Failed")
+    conjoined_contract = conjoin_contracts(conjoined_contracts)
 
     # Creating a new Goal parent
     conjoined_goal = CGTGoal(name=name,
@@ -72,6 +68,8 @@ def conjoin_goals(goals, name="", description=""):
                              sub_goals=goals,
                              sub_operation="CONJUNCTION")
 
+    conjoined_goal.set_assumptions(Or())
+
     # Connecting children to the parent
     for goal in goals:
         goal.set_parent(conjoined_goal, "CONJUNCTION")
@@ -79,10 +77,23 @@ def conjoin_goals(goals, name="", description=""):
     return conjoined_goal
 
 
-def compose_contracts(contracts, abstract_on_guarantees=None):
+def prioritize_goal(first_priority, second_priority):
+    """
+    Makes the assumption of one goal dependent on the satisfiability of the assumptions of the second goal
+    :param first_priority:
+    :param second_priority:
+    :return: lower priority goal
+    """
+    stronger_assumptions = first_priority.get_assumptions()
+    negated_stronger_assumptions = Not(And(stronger_assumptions))
+    second_priority.add_assumption(negated_stronger_assumptions)
+
+
+
+
+def compose_contracts(contracts):
     """
     :param contracts: dictionary of goals or list of contracts to compose
-           abstract_on_guarantees: list of guarantees to keep in the abstraction
     :return: True, contract which is the composition of the contracts in the goals or the contracts in the list
              False, unsat core of smt, list of proposition to fix that cause a conflict when composing
     """
@@ -101,43 +112,30 @@ def compose_contracts(contracts, abstract_on_guarantees=None):
     variables = []
     assumptions = {}
     guarantees = {}
-    abstracted_guarantees = {}
-
-    # Check if at least one contract is abstracted
-    abstracted_contracts = False
 
     for name, contract in list(contracts_dictionary.items()):
         composed_name += name + "_"
         variables.append(contract.get_variables())
         assumptions[name + "_assumptions"] = contract.get_assumptions()
         guarantees[name + "_guarantees"] = contract.get_guarantees()
-        if contract.is_abstracted():
-            abstracted_contracts = True
-            abstracted_guarantees[name + "_abstracted_guarantees"] = contract.get_abstract_guarantees()
-        else:
-            abstracted_guarantees[name + "_abstracted_guarantees"] = contract.get_guarantees()
-
 
     # CHECK COMPATILITY
     satis, model = sat_check(assumptions)
     if not satis:
-        print("The composition is uncompatible")
         print(("Fix the following assumptions:\n" + str(model)))
-        return False, model
+        raise Exception("The composition is uncompatible")
 
     # CHECK CONSISTENCY
     satis, model = sat_check(guarantees)
     if not satis:
-        print("The composition is inconsistent")
         print(("Fix the following guarantees:\n" + str(model)))
-        return False, model
+        raise Exception("The composition is inconsistent")
 
     # CHECK SATISFIABILITY
     satis, model = sat_check(merge_two_dicts(assumptions, guarantees))
     if not satis:
-        print("The composition is unsatisfiable")
         print(("Fix the following conditions:\n" + str(model)))
-        return False, model
+        raise Exception("The composition is unsatisfiable")
 
     print("The composition is compatible, consistent and satisfiable. Composing now...")
 
@@ -157,6 +155,7 @@ def compose_contracts(contracts, abstract_on_guarantees=None):
 
     print(("Assumptions:\n\t\t" + str(a_composition_simplified)))
     print(("Guarantees:\n\n\t\t" + str(g_composition_simplified)))
+
 
     # List of guarantees used to simpolify assumptions, used later for abstraction
     g_elem_list = []
@@ -233,17 +232,18 @@ def conjoin_contracts(contracts):
             if not sat_2:
                 print("The assumptions in the conjunction of contracts are not mutually exclusive")
                 print("Conflict with the following guarantees:\n" + str(model))
-                return False
-
-    assumptions = {}
-    guarantees = {}
-
-    for source_goal, propositions in list(contracts_dictionary.items()):
-        assumptions[source_goal + "_assumptions"] = propositions.get_assumptions()
-        guarantees[source_goal + "_guarantees"] = propositions.get_guarantees()
-
+                raise Exception("Conjunction Failed")
 
     print("The conjunction satisfiable.")
+
+    # assumptions = {}
+    # guarantees = {}
+    #
+    # for source_goal, propositions in list(contracts_dictionary.items()):
+    #     assumptions[source_goal + "_assumptions"] = propositions.get_assumptions()
+    #     guarantees[source_goal + "_guarantees"] = propositions.get_guarantees()
+
+    # new_contract = Contract()
 
     return True
 

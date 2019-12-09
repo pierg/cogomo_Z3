@@ -152,12 +152,12 @@ def is_contained_in(prop_1, prop_2):
     if r == unsat:
         return True
     elif r == unknown:
-        # print("failed to prove")
-        # print(s.model())
+        print("failed to prove")
+        print(s.model())
         return False
     else:
-        # print("counterexample")
-        # print(s.model())
+        print("counterexample")
+        print(s.model())
         return False
 
 
