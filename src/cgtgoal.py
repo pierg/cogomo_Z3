@@ -1,6 +1,6 @@
 from src.contract import Contract
 
-class CGTGoal(Contract):
+class CGTGoal():
     """
     Contract-based Goal Tree
 

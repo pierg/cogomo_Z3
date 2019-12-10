@@ -46,9 +46,8 @@ def parse(specfile):
         A tuple containing a contracts object and a checks object
     """
 
-    contract = CGTGoal() # contract and check holders
-
-    cgtgoal = CGTGoal()
+    cgt_goal = CGTGoal()
+    contract = Contract() # contract and check holders
 
     goal_dictionary = {}
 
@@ -70,7 +69,7 @@ def parse(specfile):
                 if GOAL_HEADER in file_header or ENDGOALS_HEADER in file_header:
                     if contract.is_full():
                         # contract.saturate_guarantees()
-                        goal_dictionary[contract.get_name()] = CGTGoal(contract.get_name(), contracts=contract)
+                        goal_dictionary[cgt_goal.get_name()] = CGTGoal(cgt_goal.get_name(), contracts=contract)
                     else:
                         raise Exception("The Goal has Incomplete Parameters")
                 # parse file headers
@@ -78,7 +77,8 @@ def parse(specfile):
                     file_header = line
                 elif GOAL_HEADER in line:
                     if file_header:
-                        contract = CGTGoal()
+                        cgt_goal = CGTGoal()
+                        contract = Contract()
                     file_header = line
                 elif CGT_HEADER in line:
                     file_header = line
@@ -99,11 +99,11 @@ def parse(specfile):
                         goal_header = line
                     elif ntabs == GOAL_DATA_INDENT:
                         if GOAL_NAME_HEADER in goal_header:
-                            contract.set_name(line.strip())
+                            cgt_goal.set_name(line.strip())
                             for key, value in constants.items():
                                 contract.add_constant((key, value))
                         elif GOAL_DESCRIPTION_HEADER in goal_header:
-                            contract.set_description(line.strip())
+                            cgt_goal.set_description(line.strip())
                         elif CONTRACT_VARIABLES_HEADER in goal_header:
                             var, init = line.split(ASSIGNMENT_CHAR, 1)
                             contract.add_variable((var.strip(), init.strip()))

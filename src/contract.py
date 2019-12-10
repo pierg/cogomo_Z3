@@ -4,6 +4,23 @@ from z3 import *
 class Contract(object):
     """Contract class stores data attributes of a contract
 
+    We don't use the Or out of Z3 but we manually build a data structure to check that all the combination can be satisfiable
+    If we would do an OR for example here:
+
+    s = Solver()
+
+    x = Real('x')
+    z = Real('z')
+
+    s.assert_and_track(Or(x > 0, z > 100), 'a1')
+    s.assert_and_track(x < 0, 'a2')
+    print(s.check())
+    print(s.unsat_core())
+
+    We wouldn't see that the first case (x>0) can never be satisfiable
+
+    CoGoMO checks that as well
+
     Attributes:
         name: a string name for the contract
         variables: a dictionary containing the string of the variable as key, and the Z3 variable as value
@@ -68,7 +85,10 @@ class Contract(object):
         Args:
             assumption: Z3 proposition where the variables are contained in self.variables
         """
-        self.assumptions.append(eval(assumption))
+        if isinstance(assumption, str):
+            self.assumptions.append(eval(assumption))
+        else:
+            self.assumptions.append(assumption)
 
     def add_guarantee(self, guarantee):
         """Adds a guarantee to the contract guarantees
@@ -76,8 +96,10 @@ class Contract(object):
         Args:
             guarantee: Z3 proposition where the variables are contained in self.variables
         """
-        self.guarantees.append(eval(guarantee))
-
+        if isinstance(guarantee, str):
+            self.guarantees.append(eval(guarantee))
+        else:
+            self.assumptions.append(guarantee)
 
     def get_assumptions(self):
 
@@ -92,7 +114,7 @@ class Contract(object):
         Check if contract parameters are filled
         :return: A boolean indicating if the contracts parameters are not empty
         """
-        return self.name and self.variables and self.assumptions and self.guarantees
+        return self.variables and self.assumptions and self.guarantees
 
     def compute_entropy(self):
         """

@@ -50,25 +50,60 @@ def compose_goals(list_of_goal, name=None, description=""):
 
 
 def conjoin_goals(goals, name="", description=""):
+    """
 
-    conjoined_contracts = []
+    :param goals: list of goals to compose
+    :param name: name of the new goal
+    :param description: description of the new goal
+    :return: new goal
+    """
+
+    """For each contract pair, checks the consistency of the guarantees among the goals that have common assumptions"""
+    for pair_of_goals in itertools.combinations(goals, r=2):
+        """Goal_name -> List of Assumptions"""
+        assumptions = {}
+
+        """Goal_name -> List of Guarantees"""
+        guarantees = {}
+
+        contracts = pair_of_goals[0].get_contracts()
+        for contract_1 in pair_of_goals[0].get_contracts():
+
+            assumptions[pair_of_goals[0].get_name() + "_assumptions"] = contract_1.get_assumptions()
+            guarantees[pair_of_goals[0].get_name() + "_guarantees"] = contract_1.get_guarantees()
+
+            for contract_2 in pair_of_goals[1].get_contracts():
+
+                assumptions[pair_of_goals[1].get_name() + "_assumptions"] = contract_2.get_assumptions()
+                guarantees[pair_of_goals[1].get_name() + "_guarantees"] = contract_2.get_guarantees()
+
+                # Check if assumptions are not mutually exclusive
+                sat_1, model = sat_check(assumptions)
+                if sat_1:
+                    sat_2, model = sat_check(guarantees)
+                    if not sat_2:
+                        print("The assumptions in the conjunction of contracts are not mutually exclusive")
+                        print("Conflict with the following guarantees:\n" + str(model))
+                        raise Exception("Conjunction Failed")
+
+    print("The conjunction satisfiable.")
+
+
+    # Creating new list of contracts
+    list_of_new_contracts = []
 
     for goal in goals:
-        conjoined_contracts.append(goal.get_contracts())
+        list_of_new_contracts.append(goal.get_contracts())
 
     # Flattening list
-    conjoined_contracts = [item for sublist in conjoined_contracts for item in sublist]
-
-    conjoined_contract = conjoin_contracts(conjoined_contracts)
+    list_of_new_contracts = [item for sublist in list_of_new_contracts for item in sublist]
 
     # Creating a new Goal parent
     conjoined_goal = CGTGoal(name=name,
                              description=description,
-                             contracts=conjoined_contracts,
+                             contracts=list_of_new_contracts,
                              sub_goals=goals,
                              sub_operation="CONJUNCTION")
-
-    conjoined_goal.set_assumptions(Or())
 
     # Connecting children to the parent
     for goal in goals:
@@ -77,16 +112,21 @@ def conjoin_goals(goals, name="", description=""):
     return conjoined_goal
 
 
-def prioritize_goal(first_priority, second_priority):
+def prioritize_goal(first_priority_goal, second_priority_goal):
     """
     Makes the assumption of one goal dependent on the satisfiability of the assumptions of the second goal
-    :param first_priority:
-    :param second_priority:
+    :param first_priority_goal:
+    :param second_priority_goal:
     :return: lower priority goal
     """
-    stronger_assumptions = first_priority.get_assumptions()
-    negated_stronger_assumptions = Not(And(stronger_assumptions))
-    second_priority.add_assumption(negated_stronger_assumptions)
+
+    stronger_assumptions_list = []
+
+    for contract in first_priority_goal.get_contracts():
+        stronger_assumptions_list.append(And(contract.get_assumptions()))
+
+    for contract in second_priority_goal.get_contracts():
+        contract.add_assumption(Not(Or(stronger_assumptions_list)))
 
 
 
@@ -204,26 +244,20 @@ def compose_contracts(contracts):
     return True, composed_contract
 
 
-def conjoin_contracts(contracts):
+def conjoin_contracts(contracts_dictionary):
 
-    contracts_dictionary = {}
-    # Transform list into a dictionary contract-name -> proposition
-    if isinstance(contracts, list):
-        for contract in contracts:
-            contracts_dictionary[contract.get_name()] = contract
-    elif isinstance(contracts, dict):
-        contracts_dictionary = contracts
-    else:
+    if not isinstance(contracts_dictionary, dict):
         raise WrongParametersError
 
-    for pair_contract in itertools.combinations(contracts, r=2):
+    for pair_contract in itertools.combinations(contracts_dictionary, r=2):
 
         assumptions = {}
         guarantees = {}
 
-        for contract in pair_contract:
-            assumptions[contract.get_name() + "_assumptions"] = contract.get_assumptions()
-            guarantees[contract.get_name() + "_guarantees"] = contract.get_guarantees()
+        for goal in pair_contract:
+            contracts = goal.get_contracts()
+            assumptions[goal.get_name() + "_assumptions"] = goal.get_contracts().get_assumptions()
+            guarantees[goal.get_name() + "_guarantees"] = goal.get_contracts().get_guarantees()
 
         # Check if assumptions are not mutually exclusive
         sat_1, model = sat_check(assumptions)
