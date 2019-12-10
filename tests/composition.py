@@ -58,21 +58,33 @@ def priority_goals():
         description="keep a short distance from the vehicle ahead")
 
 
+def composition_example():
+    """Parse Goals from Structured Text File"""
+
+    goals = parse('../spec/composable_goals.txt')
+
+    composed_goals = compose_goals(
+        [goals["component_A"], goals["component_C"]],
+        name="composedAB",
+        description="composed components A and B"
+    )
+
+    composed_goals = compose_goals(
+        [goals["component_A"], goals["component_C"]],
+        name="composedAB",
+        description="composed components A and B"
+    )
+
 
 def conjoing_and_prioritise_goals():
     """Parse Goals from Structured Text File"""
 
-    # Incomposable - Conflict Detected
-    goals = parse('../spec/incomposable_goals.txt')
-
-    # Composable
-    goals = parse('../spec/composable_goals.txt')
-
+    goals = parse('../spec/platooning.txt')
 
     """Declare New Goals that are built on top of existing goals"""
-
     keep_short_distance = None
     follow_leader = None
+    following = None
 
     try:
         keep_short_distance = conjoin_goals(
@@ -97,10 +109,16 @@ def conjoing_and_prioritise_goals():
         prioritize_goal(keep_short_distance, follow_leader)
 
         print("\nTrying to conjoin again...")
-        following_mode = conjoin_goals(
+        following = conjoin_goals(
             [keep_short_distance, follow_leader],
-            name="following_mode",
-            description="following mode of the platooning")
+            name="following",
+            description="following the car in front and the leader")
+
+    following_mode = compose_goals(
+        [following, goals["communication_leader"]],
+        name="following_communication",
+        description="followin mode"
+    )
 
 
 if __name__ == "__main__":
@@ -109,7 +127,9 @@ if __name__ == "__main__":
     # inconsistent_goals()
     # priority_goals()
 
-    conjoing_and_prioritise_goals()
+    # conjoing_and_prioritise_goals()
+
+    composition_example()
 
 
     print("END")

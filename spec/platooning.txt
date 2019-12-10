@@ -55,6 +55,7 @@ GOAL:
 		velocity_lea        := REAL
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
+		distance_front      := REAL
 	ASSUMPTIONS:
 		velocity_ego_t < velocity_lea
 	GUARANTEES:
@@ -69,6 +70,7 @@ GOAL:
 		velocity_lea        := REAL
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
+		distance_front      := REAL
 	ASSUMPTIONS:
 		velocity_ego_t > velocity_lea
 	GUARANTEES:
@@ -105,3 +107,6 @@ GOAL:
         steering_lea >= -MAX_STEERING
 
 ENDGOALS
+
+
+

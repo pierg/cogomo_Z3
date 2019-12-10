@@ -193,51 +193,21 @@ def compose_contracts(contracts):
     a_composition_simplified = a_composition[:]
     g_composition_simplified = g_composition[:]
 
-    print(("Assumptions:\n\t\t" + str(a_composition_simplified)))
-    print(("Guarantees:\n\n\t\t" + str(g_composition_simplified)))
-
-
     # List of guarantees used to simpolify assumptions, used later for abstraction
     g_elem_list = []
     # Compare each element in a_composition with each element in g_composition
     for a_elem in a_composition:
         for g_elem in g_composition:
             if is_contained_in(a_elem, g_elem):
-                print(("Simplifying assumption " + str(a_elem)))
+                print("Simplifying assumption " + str(a_elem))
                 a_composition_simplified.remove(a_elem)
                 g_elem_list.append(g_elem)
-                # g_composition_simplified.remove(g_elem)
 
-    # Check for contract abstractions to be adjusted
-    for guarantee in g_elem_list:
-        for contract in list(contracts_dictionary.values()):
-            if contract.is_abstracted():
-                contract.abstract_guarantee_if_exists(guarantee)
+    print(("Assumptions:\n\t\t" + str(a_composition_simplified)))
+    print(("Guarantees:\n\n\t\t" + str(g_composition_simplified)))
 
 
-    # Build the abstracted contract if there are other abstracted contracts
-    if abstracted_contracts:
-        g_composition = list(abstracted_guarantees.values())
-        g_composition = [item for sublist in g_composition for item in sublist]
-        g_composition = list(dict.fromkeys(g_composition))
-
-        print(("Abstracted Guarantees:\n\n\t\t" + str(g_composition)))
-
-        return True, Contract(a_composition_simplified, g_composition_simplified,
-                              abstract_guarantees=g_composition)
-
-    # Check for guarantee abstraction demanded by the designer
-    if abstract_on_guarantees is not None:
-        # Check the guarantees are an abstraction of the actual guarantees
-        if is_contained_in(g_composition_simplified, abstract_on_guarantees):
-            return True, Contract(a_composition_simplified, g_composition_simplified,
-                                  abstract_guarantees=abstract_on_guarantees)
-        else:
-            raise AbstractionError
-
-
-    composed_contract = Contract(name=composed_name,
-                                 variables=variables,
+    composed_contract = Contract(variables=variables,
                                  assumptions=a_composition_simplified,
                                  guarantees=g_composition_simplified)
 
