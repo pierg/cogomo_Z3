@@ -24,13 +24,28 @@ error = Bool('error')
 #
 #
 
+#
+# s = Solver()
+#
+# x = Real('x')
+# z = Real('z')
+#
+# s.assert_and_track(Or(x > 0, z > 100), 'a1')
+# s.assert_and_track(x < 0, 'a2')
+# print(s.check())
+# print(s.unsat_core())
+
+
+distance_front = Real('distance_front')  # measured distance
+
 
 s = Solver()
 
-x = Real('x')
-z = Real('z')
+s.assert_and_track("example:", Not(Or(distance_front>0,)))
 
-s.assert_and_track(Or(x > 0, z > 100), 'a1')
-s.assert_and_track(x < 0, 'a2')
-print(s.check())
-print(s.unsat_core())
+
+satis = s.check()
+if str(satis) == "sat":
+    print(s.model())
+else:
+    print(s.unsat_core())

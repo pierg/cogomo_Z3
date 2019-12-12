@@ -75,6 +75,8 @@ def composition_example():
         description="composed components A and B"
     )
 
+    print(composed_goals)
+
 
 def conjoing_and_prioritise_goals():
     """Parse Goals from Structured Text File"""

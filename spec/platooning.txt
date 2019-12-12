@@ -3,6 +3,7 @@ CONSTANTS:
     RSSI_net        := 60
     ZERO            := 0
     MAX_STEERING    := 1
+    DISTANCE_MIN    := 5
 
 GOAL:
 	NAME:
@@ -14,6 +15,7 @@ GOAL:
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
 	ASSUMPTIONS:
+	    distance_front > DISTANCE_MIN
 		distance_front > D_platoon
 	GUARANTEES:
 		velocity_ego_tnext > velocity_ego_t
@@ -28,6 +30,7 @@ GOAL:
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
 	ASSUMPTIONS:
+		distance_front > DISTANCE_MIN
 		distance_front < D_platoon
 	GUARANTEES:
 		velocity_ego_tnext < velocity_ego_t
@@ -42,6 +45,7 @@ GOAL:
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
 	ASSUMPTIONS:
+	    distance_front > DISTANCE_MIN
 		distance_front == D_platoon
 	GUARANTEES:
 		velocity_ego_tnext == velocity_ego_t

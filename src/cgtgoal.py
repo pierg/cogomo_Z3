@@ -23,7 +23,8 @@ class CGTGoal():
         self.name = name
         self.description = description
 
-        # contracts in conjunction
+        """List of assumption/guarantees pairs (Contract objects)
+           Each element in the list represents a contract in CONJUNCTION"""
         if not isinstance(contracts, list):
             self.contracts = [contracts]
         else:

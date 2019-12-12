@@ -2,6 +2,8 @@ from src.cgtgoal import CGTGoal
 from src.sat_checks import *
 from src.contract import *
 
+import copy
+
 import itertools
 
 
@@ -66,7 +68,6 @@ def conjoin_goals(goals, name="", description=""):
         """Goal_name -> List of Guarantees"""
         guarantees = {}
 
-        contracts = pair_of_goals[0].get_contracts()
         for contract_1 in pair_of_goals[0].get_contracts():
 
             assumptions[pair_of_goals[0].get_name() + "_assumptions"] = contract_1.get_assumptions()
@@ -77,9 +78,10 @@ def conjoin_goals(goals, name="", description=""):
                 assumptions[pair_of_goals[1].get_name() + "_assumptions"] = contract_2.get_assumptions()
                 guarantees[pair_of_goals[1].get_name() + "_guarantees"] = contract_2.get_guarantees()
 
-                # Check if assumptions are not mutually exclusive
+                """Checking Consistency only when the assumptions are satisfied together"""
                 sat_1, model = sat_check(assumptions)
                 if sat_1:
+                    """Checking Consistency only when the assumptions are satisfied together"""
                     sat_2, model = sat_check(guarantees)
                     if not sat_2:
                         print("The assumptions in the conjunction of contracts are not mutually exclusive")
@@ -88,15 +90,14 @@ def conjoin_goals(goals, name="", description=""):
 
     print("The conjunction satisfiable.")
 
-
     # Creating new list of contracts
     list_of_new_contracts = []
 
     for goal in goals:
-        list_of_new_contracts.append(goal.get_contracts())
-
-    # Flattening list
-    list_of_new_contracts = [item for sublist in list_of_new_contracts for item in sublist]
+        contracts = goal.get_contracts()
+        for contract in contracts:
+            new_contract = copy.deepcopy(contract)
+            list_of_new_contracts.append(new_contract)
 
     # Creating a new Goal parent
     conjoined_goal = CGTGoal(name=name,
@@ -125,9 +126,12 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
     for contract in first_priority_goal.get_contracts():
         stronger_assumptions_list.append(And(contract.get_assumptions()))
 
+    print(second_priority_goal)
+
     for contract in second_priority_goal.get_contracts():
         contract.add_assumption(Not(Or(stronger_assumptions_list)))
 
+    print(second_priority_goal)
 
 
 
@@ -211,47 +215,7 @@ def compose_contracts(contracts):
                                  assumptions=a_composition_simplified,
                                  guarantees=g_composition_simplified)
 
-    return True, composed_contract
-
-
-def conjoin_contracts(contracts_dictionary):
-
-    if not isinstance(contracts_dictionary, dict):
-        raise WrongParametersError
-
-    for pair_contract in itertools.combinations(contracts_dictionary, r=2):
-
-        assumptions = {}
-        guarantees = {}
-
-        for goal in pair_contract:
-            contracts = goal.get_contracts()
-            assumptions[goal.get_name() + "_assumptions"] = goal.get_contracts().get_assumptions()
-            guarantees[goal.get_name() + "_guarantees"] = goal.get_contracts().get_guarantees()
-
-        # Check if assumptions are not mutually exclusive
-        sat_1, model = sat_check(assumptions)
-        if sat_1:
-            sat_2, model = sat_check(guarantees)
-            if not sat_2:
-                print("The assumptions in the conjunction of contracts are not mutually exclusive")
-                print("Conflict with the following guarantees:\n" + str(model))
-                raise Exception("Conjunction Failed")
-
-    print("The conjunction satisfiable.")
-
-    # assumptions = {}
-    # guarantees = {}
-    #
-    # for source_goal, propositions in list(contracts_dictionary.items()):
-    #     assumptions[source_goal + "_assumptions"] = propositions.get_assumptions()
-    #     guarantees[source_goal + "_guarantees"] = propositions.get_guarantees()
-
-    # new_contract = Contract()
-
-    return True
-
-
+    return composed_contract
 
 
 def merge_two_dicts(x, y):
