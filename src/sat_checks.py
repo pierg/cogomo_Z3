@@ -174,7 +174,7 @@ def is_contained_in(prop_1, prop_2):
     refinement = And(prop_1)
     abstract = And(prop_2)
 
-    validity_check(Implies(refinement, abstract))
+    return validity_check(Implies(refinement, abstract))
 
 
 

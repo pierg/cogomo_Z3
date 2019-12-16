@@ -84,7 +84,11 @@ g_ref = [tr != 0, tr <= tr_max, tr >= tr_min, n<5,  delay == L * n / tr]
 #           Implies(error, cmd == cmd + 1)]
 
 
-print(is_contained_in(a_top, a_ref))
+# print(is_contained_in(a_top, a_ref)
+
+
+print(is_contained_in(And(n > 5, tr > 4), tr > 3))
+
 
 # print(is_contained_in(g_ref, g_top))
 

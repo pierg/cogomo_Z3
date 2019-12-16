@@ -135,6 +135,7 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
 
 
 
+
 def propagate_assumptions(abstract_goal, refined_goal):
     """
 
@@ -143,23 +144,20 @@ def propagate_assumptions(abstract_goal, refined_goal):
     contracts_refined = refined_goal.get_contracts()
     contracts_abstracted = abstract_goal.get_contracts()
 
-    variables = []
+    if len(contracts_refined) != len(contracts_abstracted):
+        raise Exception("Propagating assumptions among goals with different number of conjoined contracts")
 
-    if len(contracts) > 1:
-        assumptions_list = []
-        guarantee_list = []
-        for contract in contracts:
-            variables.append(contract.get_variables())
-            assumptions_list.append(contract.get_z3_assumptions())
-            guarantee_list.append(contract.get_z3_guarantees())
-        assumptions = Or(assumptions_list)
-        guarantees = And(guarantee_list)
-        return Contract(variables, assumptions, guarantees)
-    else:
-        variables.append(contracts[0].get_variables())
-        assumptions = contracts[0].get_z3_assumptions()
-        guarantees = contracts[0].get_z3_guarantees()
-        return Contract(variables, assumptions, guarantees)
+    for i, contract in enumerate(contracts_refined):
+        """And(.....) of all the assumptions of the abstracted contract"""
+        assumptions_abs_z3 = contracts_abstracted[i].get_z3_assumptions()
+        """List of all the assumptions of the refined contract"""
+        assumptions_ref = contract.get_assumptions()
+        assumptions_to_add = []
+        for assumption_ref in assumptions_ref:
+            if not is_contained_in(assumptions_abs_z3, assumption_ref):
+                assumptions_to_add.append(assumption_ref)
+
+        contracts_abstracted[i].add_assumptions(assumptions_to_add)
 
 
 def refine_goal(abstract_goal, refined_goal):
@@ -169,6 +167,8 @@ def refine_goal(abstract_goal, refined_goal):
     :param refined_goal:
     :return:
     """
+
+    propagate_assumptions(abstract_goal, refined_goal)
 
     abstracted_contracts = get_z3_contract(abstract_goal)
     refined_contracts = get_z3_contract(refined_goal)
