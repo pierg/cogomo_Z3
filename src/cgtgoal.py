@@ -45,7 +45,7 @@ class CGTGoal:
         self.parent_operation = parent_operation
 
     def set_refinement(self, refined_goal):
-        self.sub_goals = refined_goal
+        self.sub_goals = [refined_goal]
         self.sub_operation = 'REFINEMENT'
 
     def set_name(self, name):

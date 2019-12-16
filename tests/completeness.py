@@ -27,8 +27,9 @@ if __name__ == "__main__":
 
         refine_goal(goals['communicate_with_platoon_leader_abstracted_complete'],
                     goals['communicate_with_platoon_leader_refined_complete'])
-        #
-        # refine_goal(goals['communicate_with_platoon_leader'], goals['communicate_with_platoon_leader_refined_complete'])
+
+        print(goals['communicate_with_platoon_leader_abstracted_complete'])
+        print(goals['communicate_with_platoon_leader_refined_complete'])
 
 
 
