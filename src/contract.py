@@ -88,7 +88,10 @@ class Contract(object):
             assumption: Z3 proposition where the variables are contained in self.variables
         """
         if isinstance(assumption, str):
-            self.assumptions.append(eval(assumption))
+            if(assumption == '--'):
+                self.assumptions.append(True)
+            else:
+                self.assumptions.append(eval(assumption))
         else:
             self.assumptions.append(assumption)
 

@@ -15,9 +15,7 @@ GOAL:
         tr              := REAL     # Transmission rate
 		delay           := REAL     # Propagation Delay
 	ASSUMPTIONS:
-		tr >= TR_min
-		tr <= TR_max
-		tr != ZERO
+        --
 	GUARANTEES:
 		delay < DELAYMAX
 

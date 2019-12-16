@@ -135,6 +135,33 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
 
 
 
+def propagate_assumptions(abstract_goal, refined_goal):
+    """
+
+    :return:
+    """
+    contracts_refined = refined_goal.get_contracts()
+    contracts_abstracted = abstract_goal.get_contracts()
+
+    variables = []
+
+    if len(contracts) > 1:
+        assumptions_list = []
+        guarantee_list = []
+        for contract in contracts:
+            variables.append(contract.get_variables())
+            assumptions_list.append(contract.get_z3_assumptions())
+            guarantee_list.append(contract.get_z3_guarantees())
+        assumptions = Or(assumptions_list)
+        guarantees = And(guarantee_list)
+        return Contract(variables, assumptions, guarantees)
+    else:
+        variables.append(contracts[0].get_variables())
+        assumptions = contracts[0].get_z3_assumptions()
+        guarantees = contracts[0].get_z3_guarantees()
+        return Contract(variables, assumptions, guarantees)
+
+
 def refine_goal(abstract_goal, refined_goal):
     """
 
@@ -142,6 +169,7 @@ def refine_goal(abstract_goal, refined_goal):
     :param refined_goal:
     :return:
     """
+
     abstracted_contracts = get_z3_contract(abstract_goal)
     refined_contracts = get_z3_contract(refined_goal)
 

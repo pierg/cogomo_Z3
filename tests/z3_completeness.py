@@ -66,11 +66,15 @@ n = Int('n')
 delay = Real('delay') # maximum tolerable transmission delay
 
 
-a_top = And(tr <= tr_max, tr >= tr_min, tr != 0)
+a_top = And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5)
 a_ref = And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5)
 
-g_top = [Implies(And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5), delay < 0.01)]
-g_ref = [Implies(And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5),  delay == L * n / tr)]
+# g_top = [Implies(And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5), delay < 0.01)]
+# g_ref = [Implies(And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5),  delay == L * n / tr)]
+
+
+g_top = [delay < 0.01]
+g_ref = [tr != 0, tr <= tr_max, tr >= tr_min, n<5,  delay == L * n / tr]
 
 
 
@@ -80,9 +84,10 @@ g_ref = [Implies(And(tr <= tr_max, tr >= tr_min, tr != 0, n < 5),  delay == L * 
 #           Implies(error, cmd == cmd + 1)]
 
 
+print(is_contained_in(a_top, a_ref))
+
 # print(is_contained_in(g_ref, g_top))
 
-print(is_contained_in(a_top, a_ref))
 # print(is_contained_in(s2, top))
 
 
