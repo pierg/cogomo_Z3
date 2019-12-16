@@ -1,6 +1,7 @@
 from src.contract import Contract
 
-class CGTGoal():
+
+class CGTGoal:
     """
     Contract-based Goal Tree
 
@@ -8,6 +9,7 @@ class CGTGoal():
         contracts: a list of contract objects
         alphabet: a list of tuples containing the shared alphabet among all contracts
     """
+
     def __init__(self,
                  name="",
                  description="",
@@ -34,13 +36,17 @@ class CGTGoal():
         self.sub_goals = sub_goals
         self.sub_operation = sub_operation
 
-        # Parent goal and its relation (COMPOSITION / CONJUNCTION)
+        # Parent goal and its relation (COMPOSITION / CONJUNCTION with other siblings or ABSTRACTION)
         self.parent_goal = parent_goal
         self.parent_operation = parent_operation
 
     def set_parent(self, parent_goal, parent_operation):
         self.parent_goal = parent_goal
         self.parent_operation = parent_operation
+
+    def set_refinement(self, refined_goal):
+        self.sub_goals = refined_goal
+        self.sub_operation = 'REFINEMENT'
 
     def set_name(self, name):
         self.name = name

@@ -37,12 +37,12 @@ class Contract(object):
         if guarantees is None:
             self.guarantees = []
         else:
-            self.guarantees = guarantees
+            self.guarantees = [guarantees]
 
         if assumptions is None:
             self.assumptions = []
         else:
-            self.assumptions = assumptions
+            self.assumptions = [assumptions]
 
         if variables is None:
             self.variables = {}
@@ -59,6 +59,8 @@ class Contract(object):
             self.variables[name] = Real(name)
         elif var_type == 'BOOL':
             self.variables[name] = Bool(name)
+        elif var_type == 'INT':
+            self.variables[name] = Int(name)
 
     def add_variables(self, variables):
         """Adds a list of variables to the contract variables
@@ -77,7 +79,7 @@ class Contract(object):
         :param constant: a tuple containing the constant name and the value (int)
         """
         name, value = constant
-        self.variables[name] = int(value)
+        self.variables[name] = value
 
     def add_assumption(self, assumption):
         """Adds an assumption to the contract assumptions
@@ -104,6 +106,20 @@ class Contract(object):
     def get_assumptions(self):
 
         return self.assumptions
+
+    def get_z3_assumptions(self):
+        if len(self.assumptions) > 1:
+            return And(self.assumptions)
+        else:
+            return self.assumptions[0]
+
+    def get_z3_guarantees(self):
+        if len(self.guarantees) > 1:
+            # return And(self.guarantees)
+            return Implies(self.get_z3_assumptions(), And(self.guarantees))
+        else:
+            # return self.guarantees[0]
+            return Implies(self.get_z3_assumptions(), self.guarantees[0])
 
     def get_guarantees(self):
 

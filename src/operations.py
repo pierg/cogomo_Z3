@@ -1,6 +1,6 @@
-from src.cgtgoal import CGTGoal
 from src.sat_checks import *
 from src.contract import *
+from src.cgtgoal import CGTGoal
 
 import copy
 
@@ -133,6 +133,50 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
 
     print(second_priority_goal)
 
+
+
+def refine_goal(abstract_goal, refined_goal):
+    """
+
+    :param abstract_goal:
+    :param refined_goal:
+    :return:
+    """
+    abstracted_contracts = get_z3_contract(abstract_goal)
+    refined_contracts = get_z3_contract(refined_goal)
+
+    if not is_z3_refinement(refined_contracts, abstracted_contracts):
+        raise Exception("Incomplete Refinement!")
+
+    print("The refinement has been proven, connecting the goals..")
+    refined_goal.set_parent(abstract_goal, "ABSTRACTION")
+
+    abstract_goal.set_refinement(refined_goal)
+
+    print("The goals are now connected with each other")
+
+
+
+
+def get_z3_contract(goal):
+    contracts = goal.get_contracts()
+    variables = []
+
+    if len(contracts) > 1:
+        assumptions_list = []
+        guarantee_list = []
+        for contract in contracts:
+            variables.append(contract.get_variables())
+            assumptions_list.append(contract.get_z3_assumptions())
+            guarantee_list.append(contract.get_z3_guarantees())
+        assumptions = Or(assumptions_list)
+        guarantees = And(guarantee_list)
+        return Contract(variables, assumptions, guarantees)
+    else:
+        variables.append(contracts[0].get_variables())
+        assumptions = contracts[0].get_z3_assumptions()
+        guarantees = contracts[0].get_z3_guarantees()
+        return Contract(variables, assumptions, guarantees)
 
 
 def compose_contracts(contracts):

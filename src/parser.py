@@ -11,9 +11,12 @@ GOAL_HEADER_INDENT = 0
 GOAL_SUBHEADER_INDENT = 1
 GOAL_DATA_INDENT = 2
 
-COMMENT_CHAR = '##'
+COMMENT_CHAR = '#'
 ASSIGNMENT_CHAR = ':='
-OPERATORS = '<|>|!=| == | >= | <= | \|\| |&&'
+OPERATORS = '==|\*|\/|-|<=|>=|<|>|\+|!=|\(|\)'
+# OPERATORS = '<|>|!=| == | >= | <= | \|\| |&& | * '
+# OPERATORS = '<|>|!=|==|>=|<=|\|&&|*'
+
 
 CONSTANTS_HEADER = 'CONSTANTS'
 
@@ -90,7 +93,10 @@ def parse(specfile):
                 if CONSTANTS_HEADER in file_header:
                     if ntabs == CONSTANTS_DATA_INDENT:
                         var, init = line.split(ASSIGNMENT_CHAR, 1)
-                        constants[var.strip()] = int(init.strip())
+                        if "." in init.strip():
+                            constants[var.strip()] = float(init.strip())
+                        else:
+                            constants[var.strip()] = int(init.strip())
 
                 elif GOAL_HEADER in file_header:
                     if ntabs == GOAL_HEADER_INDENT:
@@ -111,20 +117,22 @@ def parse(specfile):
                             list_of_variables = re.split(OPERATORS, line)
                             list_stripped = []
                             for elem in list_of_variables:
-                                elem = elem.replace('-', '')
-                                list_stripped.append(elem.strip())
+                                stripped = elem.strip()
+                                if stripped is not '':
+                                    list_stripped.append(stripped)
                             for variable in list_stripped:
-                                regx = re.compile(variable + '\s|' + variable + '$')
+                                regx = re.compile('\s' + variable + '|' + variable + '\s|' + variable + '$')
                                 line = regx.sub("self.variables['" + variable + "']", line)
                             contract.add_assumption(line.strip())
                         elif CONTRACT_GUARANTEES_HEADER in goal_header:
                             list_of_variables = re.split(OPERATORS, line)
                             list_stripped = []
                             for elem in list_of_variables:
-                                elem = elem.replace('-', '')
-                                list_stripped.append(elem.strip())
+                                stripped = elem.strip()
+                                if stripped is not '':
+                                    list_stripped.append(stripped)
                             for variable in list_stripped:
-                                regx = re.compile(variable + '\s|' + variable + '$')
+                                regx = re.compile('\s' + variable + '|' + variable + '\s|' + variable + '$')
                                 line = regx.sub("self.variables['" + variable + "']", line)
                             contract.add_guarantee(line.strip())
                         else:

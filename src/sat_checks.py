@@ -91,6 +91,37 @@ def is_refinement(contract_1, contract_2):
     return a_check and g_check
 
 
+def validity_check(z3_formula):
+    s = Solver()
+
+    s.add(Not(z3_formula))
+
+    r = s.check()
+
+    if r == unsat:
+        print("the formula is proven, no counterexample found")
+        return True
+    elif r == unknown:
+        print("failed to prove")
+        print((s.model()))
+        raise Exception("failed to proove")
+    else:
+        print("counterexample")
+        print((s.model()))
+        return False
+
+def is_z3_refinement(refined_contract, abstracted_contract):
+    """
+    Check if A1 >= A2 and if G1 <= G2
+    """
+
+    a_check = validity_check(Implies(abstracted_contract.get_z3_assumptions(), refined_contract.get_z3_assumptions()))
+
+    g_check = validity_check(Implies(refined_contract.get_z3_guarantees(), abstracted_contract.get_z3_guarantees()))
+
+    return a_check and g_check
+
+
 
 def is_g_abstraction(contract_1_g, contract_2_g):
     """
@@ -140,25 +171,10 @@ def is_contained_in(prop_1, prop_2):
     if False in prop_2:
         return True
 
-    # Checks if prop_1 contains at least all the elements of prop_2 (OLD refinement = equal check)
-    # result = all(elem in prop_1 for elem in prop_2)
-
     refinement = And(prop_1)
     abstract = And(prop_2)
 
-    s = Solver()
-    s.add(Not(Implies(refinement, abstract)))
-    r = s.check()
-    if r == unsat:
-        return True
-    elif r == unknown:
-        print("failed to prove")
-        print(s.model())
-        return False
-    else:
-        # print("counterexample")
-        # print(s.model())
-        return False
+    validity_check(Implies(refinement, abstract))
 
 
 
