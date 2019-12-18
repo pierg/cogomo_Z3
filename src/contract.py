@@ -70,6 +70,13 @@ class Contract(object):
         for variable in variables:
             self.add_variable(variable)
 
+
+    def merge_variables(self, variables_dictionary):
+
+        variables_copy = self.variables.copy()
+        variables_copy.update(variables_dictionary)
+        self.variables = variables_dictionary
+
     def get_variables(self):
 
         return self.variables

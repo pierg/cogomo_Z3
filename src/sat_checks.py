@@ -12,10 +12,22 @@ def sat_check(propositions_dictionary):
         for elem in value:
             s.assert_and_track(elem, name + ": " + str(elem))
 
-    satis = s.check()
-    if str(satis) == "sat":
-        return True, s.model()
+    r = s.check()
+    # if str(satis) == "sat":
+    #     return True, s.model()
+    # else:
+    #     return False, s.unsat_core()
+
+    if r == sat:
+        print("the formula is proven, no counterexample found")
+        return True, None
+    elif r == unknown:
+        print("failed to prove")
+        print((s.model()))
+        return False, None
     else:
+        print("counterexample")
+        print((s.model()))
         return False, s.unsat_core()
 
 

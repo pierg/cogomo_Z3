@@ -1,10 +1,9 @@
 from src.sat_checks import *
 from src.contract import *
 from src.cgtgoal import CGTGoal
+import itertools as it
 
 import copy
-
-import itertools
 
 
 class WrongParametersError(Exception):
@@ -30,7 +29,19 @@ def compose_goals(list_of_goal, name=None, description=""):
     if name is None:
         name = '_'.join("{!s}".format(key) for (key, val) in list(contracts.items()))
 
-    composition_contracts = (dict(list(zip(contracts, x))) for x in itertools.product(*iter(contracts.values())))
+    """List of Lists of Contract, 
+    each element of the list is a list with the contracts in conjunctions, 
+    and each element is in composition with the other elements"""
+
+    contracts_dictionary = {}
+    for goal in list_of_goal:
+        contracts_dictionary[goal.get_name()] = goal.get_contracts()
+
+    all_names = sorted(contracts_dictionary)
+
+    # composition_contracts = it.product(*(contracts_dictionary[name] for name in all_names))
+
+    composition_contracts = (dict(list(zip(contracts, x))) for x in it.product(*iter(contracts.values())))
 
     composed_contract_list = []
     for contracts in composition_contracts:
@@ -157,7 +168,10 @@ def propagate_assumptions(abstract_goal, refined_goal):
             if not is_contained_in(assumptions_abs_z3, assumption_ref):
                 assumptions_to_add.append(assumption_ref)
 
+        """Unify alphabets"""
+        contracts_abstracted[i].merge_variables(contract.get_variables())
         contracts_abstracted[i].add_assumptions(assumptions_to_add)
+
 
 
 def refine_goal(abstract_goal, refined_goal):
@@ -209,17 +223,13 @@ def get_z3_contract(goal):
 
 def compose_contracts(contracts):
     """
-    :param contracts: dictionary of goals or list of contracts to compose
+    :param contracts: dictionary of goals name and contract
     :return: True, contract which is the composition of the contracts in the goals or the contracts in the list
              False, unsat core of smt, list of proposition to fix that cause a conflict when composing
     """
 
     contracts_dictionary = {}
-    # Transform list into a dictionary contract-name -> proposition
-    if isinstance(contracts, list):
-        for contract in contracts:
-            contracts_dictionary[contract.get_name()] = contract
-    elif isinstance(contracts, dict):
+    if isinstance(contracts, dict):
         contracts_dictionary = contracts
     else:
         raise WrongParametersError

@@ -28,7 +28,6 @@ CONTRACT_VARIABLES_HEADER = 'VARIABLES'
 CONTRACT_ASSUMPTIONS_HEADER = 'ASSUMPTIONS'
 CONTRACT_GUARANTEES_HEADER = 'GUARANTEES'
 
-
 CGT_HEADER = 'CGT'
 CGT_CONJUNCTION_HEADER = 'CONJUNCTION'
 CGT_COMPOSITION_HEADER = 'COMPOSITION'
@@ -36,7 +35,6 @@ CGT_NAME_HEADER = 'NAME'
 CGT_TREE_HEADER = 'TREE'
 CGT_END_TREE = 'ENDTREE'
 CGT_END_OPERATION = 'ENDTREE|CONJUNCTION|COMPOSITION'
-
 
 
 def parse(specfile):
@@ -50,7 +48,7 @@ def parse(specfile):
     """
 
     cgt_goal = CGTGoal()
-    contract = Contract() # contract and check holders
+    contract = Contract()  # contract and check holders
 
     goal_dictionary = {}
 
@@ -118,7 +116,7 @@ def parse(specfile):
                             list_stripped = []
                             for elem in list_of_variables:
                                 stripped = elem.strip()
-                                if stripped is not '':
+                                if stripped is not '' and not _is_string_number(stripped):
                                     list_stripped.append(stripped)
                             for variable in list_stripped:
                                 regx = re.compile('\s' + variable + '|' + variable + '\s|' + variable + '$')
@@ -129,7 +127,7 @@ def parse(specfile):
                             list_stripped = []
                             for elem in list_of_variables:
                                 stripped = elem.strip()
-                                if stripped is not '':
+                                if stripped is not '' and not _is_string_number(stripped):
                                     list_stripped.append(stripped)
                             for variable in list_stripped:
                                 regx = re.compile('\s' + variable + '|' + variable + '\s|' + variable + '$')
@@ -138,17 +136,28 @@ def parse(specfile):
                         else:
                             raise Exception("Unexpected Goal Header")
 
-
-
     print("Loaded Goals:\n\n____________________________________________________________________\n\n")
     for key, value in goal_dictionary.items():
         print(str(value) + "____________________________________________________________________\n\n")
     return goal_dictionary
 
 
+def _is_string_number(string):
+    """Returns true if string is a float or int"""
+    try:
+        int(string)
+        return True
+    except:
+        try:
+            float(string)
+            return True
+        except:
+            return False
+
+
 def _count_line(line):
     """Returns a comment-free, tab-replaced line with no whitespace and the number of tabs"""
-    line = line.split(COMMENT_CHAR, 1)[0] # remove comments
+    line = line.split(COMMENT_CHAR, 1)[0]  # remove comments
     tab_count = 0
     space_count = 0
     for char in line:
@@ -159,5 +168,5 @@ def _count_line(line):
         else:
             break
     tab_count += int(space_count / 4)
-    line = line.replace('\t', ' ' * TAB_WIDTH) # replace tabs with spaces
+    line = line.replace('\t', ' ' * TAB_WIDTH)  # replace tabs with spaces
     return line.strip(), tab_count
