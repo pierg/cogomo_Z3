@@ -37,10 +37,6 @@ def compose_goals(list_of_goal, name=None, description=""):
     for goal in list_of_goal:
         contracts_dictionary[goal.get_name()] = goal.get_contracts()
 
-    all_names = sorted(contracts_dictionary)
-
-    # composition_contracts = it.product(*(contracts_dictionary[name] for name in all_names))
-
     composition_contracts = (dict(list(zip(contracts, x))) for x in it.product(*iter(contracts.values())))
 
     composed_contract_list = []
@@ -164,14 +160,40 @@ def propagate_assumptions(abstract_goal, refined_goal):
         """List of all the assumptions of the refined contract"""
         assumptions_ref = contract.get_assumptions()
         assumptions_to_add = []
-        for assumption_ref in assumptions_ref:
-            if not is_contained_in(assumptions_abs_z3, assumption_ref):
-                assumptions_to_add.append(assumption_ref)
+        for assumption in assumptions_ref:
+            if not is_contained_in(assumptions_abs_z3, assumption):
+                assumptions_to_add.append(assumption)
 
         """Unify alphabets"""
+        vars = contract.get_variables()
         contracts_abstracted[i].merge_variables(contract.get_variables())
         contracts_abstracted[i].add_assumptions(assumptions_to_add)
 
+
+
+def is_a_refinement(refined_contract, abstracted_contract):
+    """
+    Check if A1 >= A2 and if G1 <= G2
+    """
+
+    a_check, model_a = z3_validity_check(Implies(abstracted_contract.get_assumptions()[0],
+                                                 refined_contract.get_assumptions()[0]))
+
+    g_check, model_g = z3_validity_check(Implies(refined_contract.get_guarantees()[0],
+                                                 abstracted_contract.get_guarantees()[0]))
+
+    if not a_check:
+        print("Assumptions are not a valid refinement: " + str(model_a))
+
+    if not g_check:
+        print("Guarantees are not a valid refinement")
+        print("REFINED:\n" + str(refined_contract.get_guarantees()[0]))
+        print("\n\nABSTRACT:\n" + str(abstracted_contract.get_guarantees()[0]))
+        print("\n\nCOUNTEREXAMPLE:\n" + str(model_g))
+
+
+
+    return a_check and g_check
 
 
 def refine_goal(abstract_goal, refined_goal):
@@ -187,7 +209,7 @@ def refine_goal(abstract_goal, refined_goal):
     abstracted_contracts = get_z3_contract(abstract_goal)
     refined_contracts = get_z3_contract(refined_goal)
 
-    if not is_z3_refinement(refined_contracts, abstracted_contracts):
+    if not is_a_refinement(refined_contracts, abstracted_contracts):
         raise Exception("Incomplete Refinement!")
 
     print("The refinement has been proven, connecting the goals..")
@@ -199,26 +221,25 @@ def refine_goal(abstract_goal, refined_goal):
 
 
 
-
 def get_z3_contract(goal):
     contracts = goal.get_contracts()
-    variables = []
+    variables = {}
 
     if len(contracts) > 1:
         assumptions_list = []
         guarantee_list = []
         for contract in contracts:
-            variables.append(contract.get_variables())
+            merge_two_dicts(variables, contract.get_variables())
             assumptions_list.append(contract.get_z3_assumptions())
             guarantee_list.append(contract.get_z3_guarantees())
-        assumptions = Or(assumptions_list)
-        guarantees = And(guarantee_list)
-        return Contract(variables, assumptions, guarantees)
+        assumption = Or(assumptions_list)
+        guarantee = And(guarantee_list)
+        return Contract(variables, [assumption], [guarantee])
     else:
-        variables.append(contracts[0].get_variables())
-        assumptions = contracts[0].get_z3_assumptions()
-        guarantees = contracts[0].get_z3_guarantees()
-        return Contract(variables, assumptions, guarantees)
+        merge_two_dicts(variables, contracts[0].get_variables())
+        assumption = contracts[0].get_z3_assumptions()
+        guarantee = contracts[0].get_z3_guarantees()
+        return Contract(variables, [assumption], [guarantee])
 
 
 def compose_contracts(contracts):
@@ -235,13 +256,13 @@ def compose_contracts(contracts):
         raise WrongParametersError
 
     composed_name = ""
-    variables = []
+    variables = {}
     assumptions = {}
     guarantees = {}
 
     for name, contract in list(contracts_dictionary.items()):
         composed_name += name + "_"
-        variables.append(contract.get_variables())
+        merge_two_dicts(variables, contract.get_variables())
         assumptions[name + "_assumptions"] = contract.get_assumptions()
         guarantees[name + "_guarantees"] = contract.get_guarantees()
 
@@ -299,6 +320,27 @@ def compose_contracts(contracts):
 
     return composed_contract
 
+
+
+def greedy_selection(top_level_contract, candidate_compositions):
+    """
+    Scan all the possible compositions and compute entropy and information gain for each of them,
+    returns the element with more information gain
+    :param top_level_contract:
+    :param candidate_compositions: list of list of contracts
+    :return: list of contracts
+    """
+    best_candidate = None
+    best_gain = 0
+    entropy_top = top_level_contract.compute_entropy()
+    n_guarantee_assumtions_top = len(top_level_contract.get_assumptions()) + len(top_level_contract.get_guarantees())
+    for candidate in candidate_compositions:
+        candidate_gain = (
+            entropy_top - (len(elem.get_guarantees()) / n_guarantee_assumtions_top) * elem.compute_entropy()
+            for elem in candidate)
+        if candidate_gain >= best_gain:
+            best_candidate = candidate
+    return best_candidate
 
 def merge_two_dicts(x, y):
     z = x.copy()

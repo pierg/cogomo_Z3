@@ -48,14 +48,27 @@ def case2():
 
 
 if __name__ == "__main__":
-    # case2()
 
     goals = parse('../spec/decomposition.txt')
 
-    communicate_with_platoon_leader_refined = compose_goals([
-        goals['enstablish_connection'],
-        goals['retrieve_information']], "communicate_with_platoon_leader_refined")
+    try:
+        communicate_with_platoon_leader_refined = compose_goals([
+            goals['enstablish_connection'],
+            goals['retrieve_information']], "communicate_with_platoon_leader_refined")
 
+        refine_goal(goals['communicate_with_platoon_leader'],
+                    communicate_with_platoon_leader_refined)
+
+    except Exception:
+        print("Exception occurred")
+        print("Fixing the assumptions..")
+
+        communicate_with_platoon_leader_refined = compose_goals([
+            goals['enstablish_connection_fixed'],
+            goals['retrieve_information']], "communicate_with_platoon_leader_refined")
+
+        refine_goal(goals['communicate_with_platoon_leader'],
+                    communicate_with_platoon_leader_refined)
 
 
 

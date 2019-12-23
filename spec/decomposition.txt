@@ -1,5 +1,4 @@
 CONSTANTS:
-    ZERO          := 0.0        # cannot divide by zero
     DELAYMAX      := 0.01       # seconds
     TR_min        := 3000000    # bits/s
     TR_max        := 27000000   # bits/s
@@ -20,10 +19,9 @@ GOAL:
 		a_l             := REAL   # steering angle of the leader
 		s_l             := REAL   # speed of the leader
 	ASSUMPTIONS:
-		n < MAX_PLATOON
 		tr >= TR_min
 		tr <= TR_max
-		tr != ZERO
+		tr != 0
 	GUARANTEES:
 		a_l >= -1
 	    a_l <= 1
@@ -43,7 +41,27 @@ GOAL:
 	ASSUMPTIONS:
 		tr >= TR_min
 		tr <= TR_max
-		tr != ZERO
+		tr != 0
+	GUARANTEES:
+	    connection
+		delay == (L * n) / tr
+
+
+GOAL:
+	NAME:
+		enstablish_connection_fixed
+    DESCRIPTION:
+        enstablish a connection with a VANET
+    VARIABLES:
+        connection      := BOOL   # Connection enstablished
+        tr              := REAL   # Transmission rate
+		delay           := REAL   # Propagation delay
+		n               := INT    # N vehicles in the platoon
+	ASSUMPTIONS:
+		tr >= TR_min
+		tr <= TR_max
+		tr != 0
+		n < 10
 	GUARANTEES:
 	    connection
 		delay == (L * n) / tr
@@ -57,10 +75,13 @@ GOAL:
     VARIABLES:
         connection      := BOOL   # Connection enstablished
         a_l             := REAL   # steering angle of the leader
-		s_l             := REAL   # speed of the leader
+        s_l             := REAL   # speed of the leader
 	ASSUMPTIONS:
 		connection
 	GUARANTEES:
-		a_l >= 0
+		a_l >= -0.52
+	    a_l <= 0.52
+		s_l >= 0
+		s_l < 150
 
 ENDGOALS

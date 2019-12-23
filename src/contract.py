@@ -36,18 +36,24 @@ class Contract(object):
 
         if guarantees is None:
             self.guarantees = []
+        elif isinstance(guarantees, list):
+            self.guarantees = guarantees
         else:
-            self.guarantees = [guarantees]
+            raise Exception("Attribute Error")
 
         if assumptions is None:
             self.assumptions = []
+        elif isinstance(assumptions, list):
+            self.assumptions = assumptions
         else:
-            self.assumptions = [assumptions]
+            raise Exception("Attribute Error")
 
         if variables is None:
             self.variables = {}
-        else:
+        elif isinstance(variables, dict):
             self.variables = variables
+        else:
+            raise Exception("Attribute Error")
 
     def add_variable(self, variable):
         """Adds a variable to the contract variables
@@ -118,7 +124,6 @@ class Contract(object):
             self.assumptions.append(guarantee)
 
     def get_assumptions(self):
-
         return self.assumptions
 
     def get_z3_assumptions(self):
