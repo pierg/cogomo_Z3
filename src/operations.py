@@ -68,7 +68,7 @@ def conjoin_goals(goals, name="", description=""):
     """
 
     """For each contract pair, checks the consistency of the guarantees among the goals that have common assumptions"""
-    for pair_of_goals in itertools.combinations(goals, r=2):
+    for pair_of_goals in it.combinations(goals, r=2):
         """Goal_name -> List of Assumptions"""
         assumptions = {}
 
