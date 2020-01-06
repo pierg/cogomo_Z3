@@ -57,8 +57,29 @@ if __name__ == "__main__":
         print("CGT AFTER PRIORITY")
         print(speed_control)
 
+
+    try:
+        communicate_with_platoon_leader_refined = compose_goals([
+            goals['enstablish_connection'],
+            goals['retrieve_information']], "communicate_with_platoon_leader_refined")
+
+        refine_goal(goals['communicate_with_platoon_leader'],
+                    communicate_with_platoon_leader_refined)
+
+    except Exception:
+        print("Exception occurred")
+        print("Fixing the assumptions..")
+
+        communicate_with_platoon_leader_refined = compose_goals([
+            goals['enstablish_connection_fixed'],
+            goals['retrieve_information']], "communicate_with_platoon_leader_refined")
+
+        refine_goal(goals['communicate_with_platoon_leader'],
+                    communicate_with_platoon_leader_refined)
+
+
     following_mode = compose_goals(
-        [speed_control, goals["communication_leader"]],
+        [speed_control, goals['communicate_with_platoon_leader']],
         name="following_communication",
         description="followin mode of the platoon"
     )

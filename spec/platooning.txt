@@ -1,9 +1,12 @@
 CONSTANTS:
     D_platoon       := 10
     RSSI_net        := 60
-    ZERO            := 0
     MAX_STEERING    := 1
-    DISTANCE_MIN    := 5
+    DELAYMAX      := 0.01       # seconds
+    TR_min        := 3000000    # bits/s
+    TR_max        := 27000000   # bits/s
+    L             := 3200       # bits
+    MAX_PLATOON   := 5          # maximum number of vehicles
 
 GOAL:
 	NAME:
@@ -14,8 +17,9 @@ GOAL:
 		distance_front      := REAL
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
+		distance_available  := BOOL
 	ASSUMPTIONS:
-	    distance_front > DISTANCE_MIN
+	    distance_available
 		distance_front > D_platoon
 	GUARANTEES:
 		velocity_ego_tnext > velocity_ego_t
@@ -29,8 +33,9 @@ GOAL:
 		distance_front      := REAL
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
+		distance_available  := BOOL
 	ASSUMPTIONS:
-		distance_front > DISTANCE_MIN
+	    distance_available
 		distance_front < D_platoon
 	GUARANTEES:
 		velocity_ego_tnext < velocity_ego_t
@@ -44,8 +49,9 @@ GOAL:
 		distance_front      := REAL
 		velocity_ego_t      := REAL
 		velocity_ego_tnext  := REAL
+		distance_available  := BOOL
 	ASSUMPTIONS:
-	    distance_front > DISTANCE_MIN
+	    distance_available
 		distance_front == D_platoon
 	GUARANTEES:
 		velocity_ego_tnext == velocity_ego_t
@@ -94,21 +100,83 @@ GOAL:
 	GUARANTEES:
 		velocity_ego_tnext == velocity_ego_t
 
+
 GOAL:
 	NAME:
-		communication_leader
-	VARIABLES:
-		sig_network         := BOOL
-		sig_rssi            := REAL
-		velocity_lea        := REAL
-		steering_lea        := REAL
+		communicate_with_platoon_leader
+    DESCRIPTION:
+        communicate with the leader of the platoon
+    VARIABLES:
+        tr              := REAL   # Transmission rate
+		delay           := REAL   # Propagation delay
+		n               := INT    # N vehicles in the platoon
+		a_l             := REAL   # steering angle of the leader
+		s_l             := REAL   # speed of the leader
 	ASSUMPTIONS:
-		sig_network
-		sig_rssi > RSSI_net
+		tr >= TR_min
+		tr <= TR_max
+		tr != 0
 	GUARANTEES:
-		velocity_lea >= ZERO
-		steering_lea <= MAX_STEERING
-        steering_lea >= -MAX_STEERING
+		a_l >= -1
+	    a_l <= 1
+	    s_l >= 0
+		delay < DELAYMAX
+
+GOAL:
+	NAME:
+		enstablish_connection
+    DESCRIPTION:
+        enstablish a connection with a VANET
+    VARIABLES:
+        connection      := BOOL   # Connection enstablished
+        tr              := REAL   # Transmission rate
+		delay           := REAL   # Propagation delay
+		n               := INT    # N vehicles in the platoon
+	ASSUMPTIONS:
+		tr >= TR_min
+		tr <= TR_max
+		tr != 0
+	GUARANTEES:
+	    connection
+		delay == (L * n) / tr
+
+
+GOAL:
+	NAME:
+		enstablish_connection_fixed
+    DESCRIPTION:
+        enstablish a connection with a VANET
+    VARIABLES:
+        connection      := BOOL   # Connection enstablished
+        tr              := REAL   # Transmission rate
+		delay           := REAL   # Propagation delay
+		n               := INT    # N vehicles in the platoon
+	ASSUMPTIONS:
+		tr >= TR_min
+		tr <= TR_max
+		tr != 0
+		n < 10
+	GUARANTEES:
+	    connection
+		delay == (L * n) / tr
+
+
+GOAL:
+	NAME:
+		retrieve_information
+    DESCRIPTION:
+        retrieve needed information about speed, steering angle and other info
+    VARIABLES:
+        connection      := BOOL   # Connection enstablished
+        a_l             := REAL   # steering angle of the leader
+        s_l             := REAL   # speed of the leader
+	ASSUMPTIONS:
+		connection
+	GUARANTEES:
+		a_l >= -0.52
+	    a_l <= 0.52
+		s_l >= 0
+		s_l < 150
 
 ENDGOALS
 
