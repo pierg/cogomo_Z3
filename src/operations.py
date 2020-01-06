@@ -1,6 +1,7 @@
 from src.sat_checks import *
 from src.contract import *
 from src.cgtgoal import CGTGoal
+from src.components import *
 import itertools as it
 
 import copy
@@ -139,6 +140,19 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
         contract.add_assumption(Not(Or(stronger_assumptions_list)))
 
     print(second_priority_goal)
+
+
+
+def components_selection(component_library, specification):
+
+    if not isinstance(component_library, ComponentsLibrary):
+        raise Exception("Attribute Error")
+
+    if not isinstance(specification, Contract):
+        raise Exception("Attribute Error")
+
+
+    pass
 
 
 
