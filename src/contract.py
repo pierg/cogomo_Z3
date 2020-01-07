@@ -151,15 +151,21 @@ class Contract(object):
         """
         return self.variables and self.assumptions and self.guarantees
 
-    def compute_entropy(self):
+    def cost(self):
         """
-        Used fot the synthesis
-        :return: A real indircating the between assumptions and guarantees
+        Used for component selection. Always [0, 1]
+        Lower is better
+        :return: Real number
         """
         lg = len(self.guarantees)
         la = len(self.assumptions)
 
-        return lg / (la + lg)
+        """heuristic
+        Low: guarantees while assuming little (assumption set is bigger)
+        High: guarantees while assuming a lot (assumption set is smaller)"""
+
+        return la / lg
+
 
     def is_abstracted(self):
         return False
@@ -183,3 +189,4 @@ class Contract(object):
         for guarantee in self.guarantees:
             astr += str(guarantee) + ', '
         return astr[:-2] + ' ]\n]'
+

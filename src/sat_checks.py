@@ -31,6 +31,23 @@ def sat_check(propositions_dictionary):
         return False, s.unsat_core()
 
 
+def sat_check_simple(list_propositions):
+    s = Optimize()
+
+    for prop in list_propositions:
+        s.add(prop)
+
+    r = s.check()
+
+    if r == sat:
+        return True
+    elif r == unknown:
+        print("Failed to prove")
+        print((s.model()))
+        raise Exception("Failed to prove")
+    else:
+        return False
+
 
 def z3_validity_check(z3_formula):
     s = Solver()
@@ -52,26 +69,36 @@ def z3_validity_check(z3_formula):
         return False, s.model()
 
 
-def is_contained_in(prop_1, prop_2):
+def is_set_smaller_or_equal(props_refined, props_abstracted):
     """
-    Checks if prop_1 is contained in prop_2, i.e. prop_2 is a bigger set
-    :param prop_1: single proposition or list of propositions
-    :param prop_2: single proposition or list of propositions
+    Checks if the conjunction of props_refined is contained in the conjunction of props_abstracted, i.e. prop_2 is a bigger set
+    :param props_refined: single proposition or list of propositions
+    :param props_abstracted: single proposition or list of propositions
     :return: True if prop_1 is a refinement of prop_2
     """
 
-    # convert to list
-    if not isinstance(prop_1, list):
-        prop_1 = [prop_1]
-
-    if not isinstance(prop_2, list):
-        prop_2 = [prop_2]
-
-    if False in prop_2:
+    if props_abstracted is False:
         return True
 
-    refinement = And(prop_1)
-    abstract = And(prop_2)
+    refinement = None
+    abstract = None
+
+    """Check Attributes"""
+    if isinstance(props_refined, list):
+        for elem in props_refined:
+            if not isinstance(elem, BoolRef):
+                raise Exception("Attribute Error")
+            refinement = And(props_refined)
+    elif isinstance(props_refined, BoolRef):
+        refinement = props_refined
+
+    if isinstance(props_abstracted, list):
+        for elem in props_abstracted:
+            if not isinstance(elem, BoolRef):
+                raise Exception("Attribute Error")
+            abstract = And(props_abstracted)
+    elif isinstance(props_abstracted, BoolRef):
+        abstract = props_abstracted
 
     result, model = z3_validity_check(Implies(refinement, abstract))
 

@@ -3,6 +3,7 @@ from src.contract import *
 from src.cgtgoal import CGTGoal
 from src.components import *
 import itertools as it
+import operator
 
 import copy
 
@@ -44,7 +45,6 @@ def compose_goals(list_of_goal, name=None, description=""):
     for contracts in composition_contracts:
         composed_contract = compose_contracts(contracts)
         composed_contract_list.append(composed_contract)
-
 
     composed_goal = CGTGoal(name=name,
                             description=description,
@@ -142,18 +142,63 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
     print(second_priority_goal)
 
 
-
 def components_selection(component_library, specification):
-
     if not isinstance(component_library, ComponentsLibrary):
         raise Exception("Attribute Error")
 
     if not isinstance(specification, Contract):
         raise Exception("Attribute Error")
 
+    spec_assumptions = specification.get_assumptions()
+    spec_guarantees = specification.get_guarantees()
 
-    pass
+    set_components_to_return = []
 
+    try:
+        candidates_compositions = component_library.extract_selection(spec_assumptions, spec_guarantees)
+    except Exception as e:
+        print(e)
+        return []
+
+    """Greedly select one composition"""
+    canditate_selected = greedy_selection(candidates_compositions)
+
+    set_components_to_return.append(canditate_selected)
+
+    selected_components = canditate_selected
+    while True:
+        for component in selected_components:
+            """Iteretevely check in the library if assumptions are provided by other contracts and compose"""
+            component_assumptions = component.get_assumptions()
+
+            """Extract all candidate compositions that can provide the assumptions, if they exists"""
+            try:
+                candidates_compositions = component_library.extract_selection(spec_assumptions, component_assumptions)
+            except Exception as e:
+                continue
+
+            """Greedly select one composition"""
+            canditate_selected = greedy_selection(candidates_compositions)
+
+            set_components_to_return.append(canditate_selected)
+
+        if selected_components == canditate_selected:
+            break
+        selected_components = canditate_selected
+
+    """Flattening list of selections and eliminating duplicates"""
+    flat_list_refining_components = list(set([item for sublist in set_components_to_return for item in sublist]))
+
+    print("\n\n" + str(len(flat_list_refining_components)) +
+          " components found in the library that composed refine the specifications:")
+
+    for n, l in enumerate(set_components_to_return):
+        ret = "\t" * n
+        for component in l:
+            ret += component.get_id() + " "
+        print(ret)
+
+    return flat_list_refining_components
 
 
 
@@ -175,14 +220,13 @@ def propagate_assumptions(abstract_goal, refined_goal):
         assumptions_ref = contract.get_assumptions()
         assumptions_to_add = []
         for assumption in assumptions_ref:
-            if not is_contained_in(assumptions_abs_z3, assumption):
+            if not is_set_smaller_or_equal(assumptions_abs_z3, assumption):
                 assumptions_to_add.append(assumption)
 
         """Unify alphabets"""
         vars = contract.get_variables()
         contracts_abstracted[i].merge_variables(contract.get_variables())
         contracts_abstracted[i].add_assumptions(assumptions_to_add)
-
 
 
 def is_a_refinement(refined_contract, abstracted_contract):
@@ -204,8 +248,6 @@ def is_a_refinement(refined_contract, abstracted_contract):
         print("REFINED:\n" + str(refined_contract.get_guarantees()[0]))
         print("\n\nABSTRACT:\n" + str(abstracted_contract.get_guarantees()[0]))
         print("\n\nCOUNTEREXAMPLE:\n" + str(model_g))
-
-
 
     return a_check and g_check
 
@@ -232,7 +274,6 @@ def refine_goal(abstract_goal, refined_goal):
     abstract_goal.set_refinement(refined_goal)
 
     print("The goals are now connected with each other")
-
 
 
 def get_z3_contract(goal):
@@ -319,14 +360,13 @@ def compose_contracts(contracts):
     # Compare each element in a_composition with each element in g_composition
     for a_elem in a_composition:
         for g_elem in g_composition:
-            if is_contained_in(a_elem, g_elem):
+            if is_set_smaller_or_equal(a_elem, g_elem):
                 print("Simplifying assumption " + str(a_elem))
                 a_composition_simplified.remove(a_elem)
                 g_elem_list.append(g_elem)
 
     print(("Assumptions:\n\t\t" + str(a_composition_simplified)))
     print(("Guarantees:\n\n\t\t" + str(g_composition_simplified)))
-
 
     composed_contract = Contract(variables=variables,
                                  assumptions=a_composition_simplified,
@@ -335,26 +375,77 @@ def compose_contracts(contracts):
     return composed_contract
 
 
+def greedy_selection(candidate_compositions):
+    """
+    Scan all the possible compositions and compute costs for each of them,
+    If there are multiple compositions iwth the same cost, pick the more refined one
+    (bigger assumptions, smaller guarantees)
+    :param: List of List
+    """
+    best_candidates = []
+    lowest_cost = float('inf')
 
-def greedy_selection(top_level_contract, candidate_compositions):
-    """
-    Scan all the possible compositions and compute entropy and information gain for each of them,
-    returns the element with more information gain
-    :param top_level_contract:
-    :param candidate_compositions: list of list of contracts
-    :return: list of contracts
-    """
-    best_candidate = None
-    best_gain = 0
-    entropy_top = top_level_contract.compute_entropy()
-    n_guarantee_assumtions_top = len(top_level_contract.get_assumptions()) + len(top_level_contract.get_guarantees())
-    for candidate in candidate_compositions:
-        candidate_gain = (
-            entropy_top - (len(elem.get_guarantees()) / n_guarantee_assumtions_top) * elem.compute_entropy()
-            for elem in candidate)
-        if candidate_gain >= best_gain:
-            best_candidate = candidate
-    return best_candidate
+    for composition in candidate_compositions:
+        cost = 0
+        for component in composition:
+            cost += component.cost()
+        if cost < lowest_cost:
+            best_candidates.append(composition)
+        elif cost == lowest_cost:
+            best_candidates.append(composition)
+
+    if len(best_candidates) == 1:
+        return best_candidates[0]
+
+    else:
+        """Keep score of the candidates"""
+
+        """Dict: candidate_id -> points"""
+        candidates_points = {}
+        """Dict: candidate_id -> list of components"""
+        candidates_list = {}
+
+        """Generate all pairs"""
+        for candidate in it.permutations(best_candidates):
+            i = iter(candidate)
+            candidate_pairs = zip(i, i)
+
+        """Assign points if one candidate refine another"""
+        for i, pair in enumerate(candidate_pairs):
+            candidates_points["candidate_0_" + str(i)] = 0
+            candidates_points["candidate_1_" + str(i)] = 0
+            candidates_list["candidate_0_" + str(i)] = pair[0]
+            candidates_list["candidate_1_" + str(i)] = pair[1]
+
+            pair_0_assumptions = set([])
+            pair_1_assumptions = set([])
+            pair_0_gurantees = set([])
+            pair_1_gurantees = set([])
+
+            for component in pair[0]:
+                for elem in component.get_assumptions():
+                    pair_0_assumptions.add(elem)
+                for elem in component.get_guarantees():
+                    pair_0_gurantees.add(elem)
+            for component in pair[1]:
+                for elem in component.get_assumptions():
+                    pair_1_assumptions.add(elem)
+                for elem in component.get_guarantees():
+                    pair_1_gurantees.add(elem)
+
+            check_guarantees = is_set_smaller_or_equal(list(pair_0_gurantees), list(pair_1_gurantees))
+            check_assumptions = is_set_smaller_or_equal(list(pair_1_assumptions), list(pair_0_assumptions))
+
+            if check_guarantees and check_assumptions:
+                candidates_points["candidate_0_" + str(i)] += 1
+            else:
+                candidates_points["candidate_1_" + str(i)] += 1
+
+        """Extract the candidate with the highest score (the most refined)"""
+        best_candidate = max(candidates_points.items(), key=operator.itemgetter(1))[0]
+
+        return candidates_list[best_candidate]
+
 
 def merge_two_dicts(x, y):
     z = x.copy()
