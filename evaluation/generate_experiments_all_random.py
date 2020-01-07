@@ -126,6 +126,8 @@ if __name__ == '__main__':
 
     with open(run_file_name, 'w') as rf:
 
+        rf.write("import sys\nsys.path.append('../src')\n")
+
         for n_prop in n_props:
             for n_comp in n_comps:
                 gen_file(n_prop, n_comp)
