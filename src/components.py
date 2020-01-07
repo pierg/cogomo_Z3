@@ -58,6 +58,19 @@ class ComponentsLibrary:
         else:
             raise Exception("Attribute Error")
 
+    def add_component(self, component):
+        if isinstance(component, Component):
+            self.list_of_components.append(component)
+        else:
+            raise Exception("Attribute Error")
+
+    def add_components(self, components_list):
+        if isinstance(components_list, list):
+            for component in components_list:
+                self.add_component((component))
+        else:
+            raise Exception("Attribute Error")
+
 
     def get_components(self):
         return self.list_of_components
