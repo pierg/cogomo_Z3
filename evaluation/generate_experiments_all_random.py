@@ -1,6 +1,7 @@
 import os
 from random import randint
 import textwrap
+import csv
 
 filepath = os.getcwd()
 
@@ -86,15 +87,40 @@ def gen_file(n_props, n_comps):
                         ''').format(n_props, n_comps))
 
 
+def elaborate(match_times_dict, comp_props_dict):
+    with open('./results/comp_props_dict.csv', 'w') as f:
+        w = csv.writer(f)
+        w.writerows(comp_props_dict.items())
+
+    with open('./results/match_times_dict.csv', 'w') as f:
+        w = csv.writer(f)
+        w.writerows(match_times_dict.items())
+
+    n_match_set = set()
+    for combination, results in match_times_dict.items():
+        for n_match in results.keys():
+            n_match_set.add(n_match)
+
+    n_match_set = list(n_match_set)
+
+    with open('./results/match_times.csv', 'w') as f:
+
+        for n_match in n_match_set:
+            f.write(str(n_match) + ",")
+            for i, (combination, results) in enumerate(match_times_dict.items()):
+                if n_match in results.keys():
+                    f.write(str(results[n_match]))
+                if i < len(match_times_dict) -1:
+                    f.write(",")
+                else:
+                    f.write("\n")
+
 if __name__ == '__main__':
 
     run_file_name = "run_all.py"
 
-    # n_props = [2, 4, 8, 16]
-    # n_comps = [4, 8, 16, 32]
-
-    n_props = [2, 6]
-    n_comps = [4, 16]
+    n_props = [2, 4, 8, 16, 32, 64]
+    n_comps = [10, 30, 50, 70, 90, 110, 130, 150]
 
     main_flag = False
 
@@ -105,15 +131,26 @@ if __name__ == '__main__':
                 gen_file(n_prop, n_comp)
                 rf.write("from case_{0}_{1} import *\n".format(n_prop, n_comp))
 
+        rf.write("\nfrom statistics import mean\nimport csv\nfrom generate_experiments_all_random import elaborate\n")
+
+        rf.write("""\
+if __name__ == '__main__':
+    match_times_dict = {}
+    comp_props_dict = {}
+                 """)
+        rf.write("\n\n")
+
+
         for n_prop in n_props:
             for n_comp in n_comps:
-                if not main_flag:
-                    rf.write("\n\nif __name__ == '__main__':\n\n")
-                    main_flag = True
-
-                rf.write("    match_times = run_{0}_{1}()\n".format(n_prop, n_comp))
 
                 rf.write("""\
-    print("ciao")
-                        """)
-                rf.write("\n")
+    match_times_{0}_{1} = run_{0}_{1}()
+    for key, value in match_times_{0}_{1}.items():
+        match_times_{0}_{1}[key] = mean(value)
+    match_times_dict[({0}, {1})] = match_times_{0}_{1}
+    comp_props_dict[({0}, {1})] = mean(match_times_{0}_{1}[k] for k in match_times_{0}_{1})
+                """.format(n_prop, n_comp))
+                rf.write("\n\n")
+
+        rf.write("    elaborate(match_times_dict, comp_props_dict)\n")
