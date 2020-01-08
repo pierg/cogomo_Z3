@@ -1,11 +1,25 @@
+import argparse
 import os
 from random import randint
 import textwrap
 import csv
 
+parser=argparse.ArgumentParser()
+
+parser.add_argument('--cmin', help='# components min', type= int, default= 10)
+parser.add_argument('--cmax', help='# components max', type= int, default= 100)
+parser.add_argument('--pmin', help='# propositions min', type= int, default= 2)
+parser.add_argument('--pmax', help='# propositions max', type= int, default= 20)
+parser.add_argument('--cstep', help='step size component', type= int, default= 10)
+parser.add_argument('--pstep', help='step size propositions', type= int, default= 2)
+
+args = parser.parse_args()
+
 filepath = os.getcwd()
 
 evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation"
+
+
 
 if not os.path.exists(evaluation_folder):
     os.makedirs(evaluation_folder)
@@ -129,8 +143,18 @@ if __name__ == '__main__':
 
     run_file_name = "run_all.py"
 
-    n_props = [2, 4, 8, 16, 32]
-    n_comps = [10, 30, 50, 70, 90, 110, 130, 150]
+    n_props = []
+    n_comps = []
+
+    p = args.pmin
+    for i in range(int((args.pmax-args.pmin)/args.pstep)+1):
+        n_props.append(p)
+        p += args.pstep
+
+    c = args.cmin
+    for i in range(int((args.cmax-args.cmin)/args.cstep)+1):
+        n_comps.append(c)
+        c += args.cstep
 
     main_flag = False
 

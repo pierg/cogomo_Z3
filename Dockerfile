@@ -23,7 +23,6 @@ RUN python3 -m pip install --user --upgrade pip==9.0.3
 
 RUN \
     pip3 install z3 && \
-    pip3 install numpy && \
     pip3 install z3-solver
 
 
