@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# Pull latest changes in the repositories
-echo "...updating repository wiseml..."
+echo "...updating repository ..."
 pwd
 git reset --hard HEAD
 git clean -f
