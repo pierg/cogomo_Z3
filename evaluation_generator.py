@@ -15,7 +15,10 @@ parser.add_argument('--pmax', help='# propositions max', type= int, default= 20)
 parser.add_argument('--cstep', help='step size component', type= int, default= 10)
 parser.add_argument('--pstep', help='step size propositions', type= int, default= 2)
 
-args = parser.parse_args()
+try:
+    args = parser.parse_args()
+except Exception:
+    print("Using Default Arguments")
 
 filepath = os.getcwd()
 
