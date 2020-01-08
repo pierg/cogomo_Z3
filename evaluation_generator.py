@@ -143,7 +143,7 @@ if __name__ == '__main__':
                 gen_file(n_prop, n_comp)
                 rf.write("from case_{0}_{1} import *\n".format(n_prop, n_comp))
 
-        rf.write("\nfrom statistics import mean\nfrom generate import elaborate\n\n\n")
+        rf.write("\nfrom statistics import mean\nfrom evaluation_generator import elaborate\n\n\n")
 
         rf.write("""\
 if __name__ == '__main__':
