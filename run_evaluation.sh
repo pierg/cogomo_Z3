@@ -5,6 +5,7 @@ if [ $# -eq 0 ]
     echo python3 ./evaluation_generator.py
     python3 ./evaluation_generator.py
 else
+    echo $#
     echo "Lauching Version with Parameters: " "$@"
     echo python3 ./evaluation_generator.py "$@"
     python3 ./evaluation_generator.py "$@"
