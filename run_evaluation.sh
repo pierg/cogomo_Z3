@@ -1,8 +1,12 @@
 # Generate Files
 if [ $# -eq 0 ]
   then
+    echo "Lauching Version without Parameters:"
+    echo python3 ./evaluation_generator.py
     python3 ./evaluation_generator.py
 else
+    echo "Lauching Version with Parameters: " "$@"
+    echo python3 ./evaluation_generator.py "$@"
     python3 ./evaluation_generator.py "$@"
 fi
 
