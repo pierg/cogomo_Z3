@@ -5,10 +5,17 @@ import csv
 
 filepath = os.getcwd()
 
+evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation"
+
+if not os.path.exists(evaluation_folder):
+    os.makedirs(evaluation_folder)
+
+if not os.path.exists(evaluation_folder + "/results"):
+    os.makedirs(evaluation_folder + "/results")
 
 def gen_file(n_props, n_comps):
     file_name = "case_" + str(n_props) + "_" + str(n_comps) + ".py"
-    with open(file_name, 'w') as f:
+    with open(evaluation_folder + "/" + file_name, 'w') as f:
         f.write(textwrap.dedent('''\
             from src.operations import *
             import time
@@ -88,11 +95,12 @@ def gen_file(n_props, n_comps):
 
 
 def elaborate(match_times_dict, comp_props_dict):
-    with open('./results/comp_props_dict.csv', 'w') as f:
+
+    with open(evaluation_folder + '/results/comp_props_dict.csv', 'w') as f:
         w = csv.writer(f)
         w.writerows(comp_props_dict.items())
 
-    with open('./results/match_times_dict.csv', 'w') as f:
+    with open(evaluation_folder + '/results/match_times_dict.csv', 'w') as f:
         w = csv.writer(f)
         w.writerows(match_times_dict.items())
 
@@ -103,7 +111,7 @@ def elaborate(match_times_dict, comp_props_dict):
 
     n_match_set = list(n_match_set)
 
-    with open('./results/match_times.csv', 'w') as f:
+    with open(evaluation_folder + '/results/match_times.csv', 'w') as f:
 
         for n_match in range(1, max(n_match_set)+1):
             f.write(str(n_match) + ",")
@@ -126,7 +134,7 @@ if __name__ == '__main__':
 
     main_flag = False
 
-    with open(run_file_name, 'w') as rf:
+    with open(evaluation_folder + "/" + run_file_name, 'w') as rf:
 
         rf.write("import sys\nsys.path.append('../src')\n")
 
@@ -135,7 +143,7 @@ if __name__ == '__main__':
                 gen_file(n_prop, n_comp)
                 rf.write("from case_{0}_{1} import *\n".format(n_prop, n_comp))
 
-        rf.write("\nfrom statistics import mean\nfrom generate_experiments_all_random import elaborate\n")
+        rf.write("\nfrom statistics import mean\nfrom generate import elaborate\n\n\n")
 
         rf.write("""\
 if __name__ == '__main__':
