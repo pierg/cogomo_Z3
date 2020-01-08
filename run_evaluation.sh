@@ -1,5 +1,3 @@
-export PYTHONPATH=$PYTHONPATH:$(pwd)/src:$(pwd)/evaluation
-
 # Generate Files
 python3 ./evaluation_generator.py
 
