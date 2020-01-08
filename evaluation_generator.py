@@ -3,6 +3,8 @@ import os
 from random import randint
 import textwrap
 import csv
+import random
+import string
 
 parser=argparse.ArgumentParser()
 
@@ -17,7 +19,12 @@ args = parser.parse_args()
 
 filepath = os.getcwd()
 
-evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation"
+idname = ''.join([random.choice(string.ascii_letters
+            + string.digits) for n in range(4)])
+
+evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation_" + str(args.pmin) + "." + \
+                    str(args.pmax) + "." + str(args.pstep) + "_" + str(args.cmin) + "." + str(args.cmax) + "." +\
+                    str(args.cstep) + "_" + idname
 
 
 
