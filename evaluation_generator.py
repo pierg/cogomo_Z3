@@ -22,17 +22,19 @@ filepath = os.getcwd()
 idname = ''.join([random.choice(string.ascii_letters
             + string.digits) for n in range(4)])
 
-evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation_" + str(args.pmin) + "." + \
-                    str(args.pmax) + "." + str(args.pstep) + "_" + str(args.cmin) + "." + str(args.cmax) + "." +\
-                    str(args.cstep) + "_" + idname
+evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation"
 
 
 
 if not os.path.exists(evaluation_folder):
     os.makedirs(evaluation_folder)
 
-if not os.path.exists(evaluation_folder + "/results"):
-    os.makedirs(evaluation_folder + "/results")
+result_folder_id = "/results_" + str(args.pmin) + "." + \
+                    str(args.pmax) + "." + str(args.pstep) + "_" + str(args.cmin) + "." + str(args.cmax) + "." +\
+                    str(args.cstep) + "_" + idname
+
+if not os.path.exists(evaluation_folder + result_folder_id):
+    os.makedirs(evaluation_folder + result_folder_id)
 
 def gen_file(n_props, n_comps):
     file_name = "case_" + str(n_props) + "_" + str(n_comps) + ".py"
