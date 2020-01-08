@@ -105,7 +105,7 @@ def elaborate(match_times_dict, comp_props_dict):
 
     with open('./results/match_times.csv', 'w') as f:
 
-        for n_match in n_match_set:
+        for n_match in range(1, max(n_match_set)+1):
             f.write(str(n_match) + ",")
             for i, (combination, results) in enumerate(match_times_dict.items()):
                 if n_match in results.keys():
@@ -114,12 +114,14 @@ def elaborate(match_times_dict, comp_props_dict):
                     f.write(",")
                 else:
                     f.write("\n")
+    print("Data Saved")
+
 
 if __name__ == '__main__':
 
     run_file_name = "run_all.py"
 
-    n_props = [2, 4, 8, 16, 32, 64]
+    n_props = [2, 4, 8, 16, 32]
     n_comps = [10, 30, 50, 70, 90, 110, 130, 150]
 
     main_flag = False
@@ -133,7 +135,7 @@ if __name__ == '__main__':
                 gen_file(n_prop, n_comp)
                 rf.write("from case_{0}_{1} import *\n".format(n_prop, n_comp))
 
-        rf.write("\nfrom statistics import mean\nimport csv\nfrom generate_experiments_all_random import elaborate\n")
+        rf.write("\nfrom statistics import mean\nfrom generate_experiments_all_random import elaborate\n")
 
         rf.write("""\
 if __name__ == '__main__':
@@ -153,6 +155,7 @@ if __name__ == '__main__':
     match_times_dict[({0}, {1})] = match_times_{0}_{1}
     comp_props_dict[({0}, {1})] = mean(match_times_{0}_{1}[k] for k in match_times_{0}_{1})
                 """.format(n_prop, n_comp))
+                rf.write("\n")
+                rf.write("    elaborate(match_times_dict, comp_props_dict)\n")
                 rf.write("\n\n")
 
-        rf.write("    elaborate(match_times_dict, comp_props_dict)\n")
