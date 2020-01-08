@@ -1,7 +1,6 @@
-docker run -it -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmax=8" "--cmin=20"
+docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmax=10" "--cmin=10"
 
-docker run -it -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3
+docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmax=8" "--cmin=20"
 
-docker run -it -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmax=44" "--cmax=34"
+docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmin=2"
 
-./entrypoint_local.sh "--pmax=44" "--cmax=34"

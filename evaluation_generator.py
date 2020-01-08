@@ -151,6 +151,14 @@ def elaborate(folder, match_times_dict, comp_props_dict):
     print("Data Saved")
 
 
+def logtofile(folder, message):
+
+    with open(folder + '/log.txt', 'w') as f:
+
+        f.write(message+"\n")
+
+
+
 if __name__ == '__main__':
 
     os.makedirs(evaluation_folder + result_folder_id)
@@ -181,7 +189,7 @@ if __name__ == '__main__':
                 gen_file(n_prop, n_comp)
                 rf.write("from case_{0}_{1} import *\n".format(n_prop, n_comp))
 
-        rf.write("\nfrom statistics import mean\nfrom evaluation_generator import elaborate\n\n\n")
+        rf.write("\nfrom statistics import mean\nfrom evaluation_generator import *\n\n\n")
 
         rf.write("""\
 if __name__ == '__main__':
@@ -194,6 +202,8 @@ if __name__ == '__main__':
         for n_prop in n_props:
             for n_comp in n_comps:
 
+                rf.write("    logtofile('{0}','starting {1}_{2}...')\n".format(result_folder, n_prop, n_comp))
+
                 rf.write("""\
     match_times_{0}_{1} = run_{0}_{1}()
     for key, value in match_times_{0}_{1}.items():
@@ -202,6 +212,7 @@ if __name__ == '__main__':
     comp_props_dict[({0}, {1})] = mean(match_times_{0}_{1}[k] for k in match_times_{0}_{1})
                 """.format(n_prop, n_comp))
                 rf.write("\n")
+                rf.write("    logtofile('{0}','finished {1}_{2}')\n".format(result_folder, n_prop, n_comp))
                 rf.write("    elaborate('{}',match_times_dict, comp_props_dict)\n".format(result_folder))
                 rf.write("\n\n")
 
