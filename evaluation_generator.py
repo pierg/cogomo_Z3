@@ -6,7 +6,7 @@ import csv
 import random
 import string
 
-parser=argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 
 parser.add_argument('--cmin', help='# components min', type= int, default= 10)
 parser.add_argument('--cmax', help='# components max', type= int, default= 100)
@@ -33,8 +33,8 @@ result_folder_id = "/results_" + str(args.pmin) + "." + \
                     str(args.pmax) + "." + str(args.pstep) + "_" + str(args.cmin) + "." + str(args.cmax) + "." +\
                     str(args.cstep) + "_" + idname
 
-if not os.path.exists(evaluation_folder + result_folder_id):
-    os.makedirs(evaluation_folder + result_folder_id)
+result_folder = evaluation_folder + result_folder_id
+
 
 def gen_file(n_props, n_comps):
     file_name = "case_" + str(n_props) + "_" + str(n_comps) + ".py"
@@ -117,13 +117,13 @@ def gen_file(n_props, n_comps):
                         ''').format(n_props, n_comps))
 
 
-def elaborate(match_times_dict, comp_props_dict):
+def elaborate(folder, match_times_dict, comp_props_dict):
 
-    with open(evaluation_folder + '/results/comp_props_dict.csv', 'w') as f:
+    with open(folder + '/comp_props_dict.csv', 'w') as f:
         w = csv.writer(f)
         w.writerows(comp_props_dict.items())
 
-    with open(evaluation_folder + '/results/match_times_dict.csv', 'w') as f:
+    with open(folder + '/match_times_dict.csv', 'w') as f:
         w = csv.writer(f)
         w.writerows(match_times_dict.items())
 
@@ -134,7 +134,7 @@ def elaborate(match_times_dict, comp_props_dict):
 
     n_match_set = list(n_match_set)
 
-    with open(evaluation_folder + '/results/match_times.csv', 'w') as f:
+    with open(folder + '/match_times.csv', 'w') as f:
 
         for n_match in range(1, max(n_match_set)+1):
             f.write(str(n_match) + ",")
@@ -149,6 +149,8 @@ def elaborate(match_times_dict, comp_props_dict):
 
 
 if __name__ == '__main__':
+
+    os.makedirs(evaluation_folder + result_folder_id)
 
     run_file_name = "run_all.py"
 
@@ -197,6 +199,6 @@ if __name__ == '__main__':
     comp_props_dict[({0}, {1})] = mean(match_times_{0}_{1}[k] for k in match_times_{0}_{1})
                 """.format(n_prop, n_comp))
                 rf.write("\n")
-                rf.write("    elaborate(match_times_dict, comp_props_dict)\n")
+                rf.write("    elaborate('{}',match_times_dict, comp_props_dict)\n".format(result_folder))
                 rf.write("\n\n")
 
