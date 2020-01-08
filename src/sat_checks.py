@@ -1,3 +1,5 @@
+import re
+
 from z3 import *
 
 
@@ -69,6 +71,46 @@ def z3_validity_check(z3_formula):
         return False, s.model()
 
 
+def check_ports_are_compatible(prop_1, prop_2):
+    """Returns True if the two propositions or list of propositions share at least one port (variable)"""
+
+    prop_1_names = []
+    prop_2_names = []
+
+    if isinstance(prop_1, BoolRef):
+        prop_1 = [prop_1]
+    if isinstance(prop_2, BoolRef):
+        prop_2 = [prop_2]
+
+    for elem in prop_1:
+        if not isinstance(elem, BoolRef):
+            raise Exception("Attribute Error")
+
+        list_var = re.split('[\s\d\W]', str(elem))
+
+        for var in list_var:
+            stripped = var.strip()
+            if stripped is not '':
+                prop_1_names.append(stripped)
+
+    for elem in prop_2:
+        if not isinstance(elem, BoolRef):
+            raise Exception("Attribute Error")
+
+        list_var = re.split('[\s\d\W]', str(elem))
+
+        for var in list_var:
+            stripped = var.strip()
+            if stripped is not '':
+                prop_2_names.append(stripped)
+
+    for var_names_1 in prop_1_names:
+        for var_names_2 in prop_2_names:
+            if var_names_1 == var_names_2:
+                return True
+
+    return False
+
 def is_set_smaller_or_equal(props_refined, props_abstracted):
     """
     Checks if the conjunction of props_refined is contained in the conjunction of props_abstracted, i.e. prop_2 is a bigger set
@@ -80,23 +122,26 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
     if props_abstracted is False:
         return True
 
+    if check_ports_are_compatible(props_refined, props_abstracted) is False:
+        return False
+
     refinement = None
     abstract = None
 
     """Check Attributes"""
     if isinstance(props_refined, list):
-        for elem in props_refined:
-            if not isinstance(elem, BoolRef):
-                raise Exception("Attribute Error")
+        if len(props_refined) == 1:
+            refinement = props_refined[0]
+        else:
             refinement = And(props_refined)
     elif isinstance(props_refined, BoolRef):
         refinement = props_refined
 
     if isinstance(props_abstracted, list):
-        for elem in props_abstracted:
-            if not isinstance(elem, BoolRef):
-                raise Exception("Attribute Error")
-            abstract = And(props_abstracted)
+        if len(props_abstracted) == 1:
+            abstract = props_refined[0]
+        else:
+            abstract = And(props_refined)
     elif isinstance(props_abstracted, BoolRef):
         abstract = props_abstracted
 
