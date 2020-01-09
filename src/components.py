@@ -130,6 +130,10 @@ class ComponentsLibrary:
         """Filter incomposable candidates"""
         candidates_compositions[:] = it.filterfalse(incomposable_check, candidates_compositions)
 
+        print(str(len(candidates_compositions)) + " candidate compositions found:")
+        for candidate in candidates_compositions:
+            print(str(candidate))
+
         return candidates_compositions
 
 

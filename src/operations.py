@@ -161,8 +161,6 @@ def components_selection(component_library, specification):
         print(e)
         return []
 
-    print("First " + str(len(candidates_compositions)) + " candidate compositions found")
-
     canditate_selected = greedy_selection(candidates_compositions)
     print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
           str(len(candidates_compositions)) + " candidates")
