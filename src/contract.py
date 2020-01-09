@@ -170,11 +170,6 @@ class Contract(object):
     def is_abstracted(self):
         return False
 
-    def saturate_guarantees(self):
-        """
-        In CoGoMo we assume that the assumptions are always satisfied, no saturation needed
-        """
-        pass
 
     def __str__(self):
         """Override the print behavior"""

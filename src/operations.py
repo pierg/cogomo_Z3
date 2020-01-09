@@ -157,8 +157,11 @@ def components_selection(component_library, specification):
     try:
         candidates_compositions = component_library.extract_selection(spec_assumptions, spec_guarantees)
     except Exception as e:
+        print("No refinement possible")
         print(e)
         return []
+
+    print("First component found")
 
     """Greedly select one composition"""
     canditate_selected = greedy_selection(candidates_compositions)
@@ -167,6 +170,7 @@ def components_selection(component_library, specification):
 
     selected_components = canditate_selected
     while True:
+        print("Looking for components that regine thee assumptions")
         for component in selected_components:
             """Iteretevely check in the library if assumptions are provided by other contracts and compose"""
             component_assumptions = component.get_assumptions()
@@ -175,6 +179,7 @@ def components_selection(component_library, specification):
             try:
                 candidates_compositions = component_library.extract_selection(spec_assumptions, component_assumptions)
             except Exception as e:
+                print("No further refinement possible")
                 continue
 
             """Greedly select one composition"""
@@ -183,6 +188,7 @@ def components_selection(component_library, specification):
             set_components_to_return.append(canditate_selected)
 
         if selected_components == canditate_selected:
+            print("Finishing..")
             break
         selected_components = canditate_selected
 
@@ -385,6 +391,8 @@ def greedy_selection(candidate_compositions):
     best_candidates = []
     lowest_cost = float('inf')
 
+    print("Choosing greedly the component...")
+
     for composition in candidate_compositions:
         cost = 0
         for component in composition:
@@ -395,6 +403,7 @@ def greedy_selection(candidate_compositions):
             best_candidates.append(composition)
 
     if len(best_candidates) == 1:
+        print("Returning the best candidate based on cost")
         return best_candidates[0]
 
     else:
@@ -444,6 +453,7 @@ def greedy_selection(candidate_compositions):
         """Extract the candidate with the highest score (the most refined)"""
         best_candidate = max(candidates_points.items(), key=operator.itemgetter(1))[0]
 
+        print("Returning the best candidate based on assumption set")
         return candidates_list[best_candidate]
 
 
