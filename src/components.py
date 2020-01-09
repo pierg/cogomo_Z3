@@ -143,9 +143,9 @@ class ComponentsLibrary:
 
         print(str(len(candidates_compositions)) + " candidate compositions found:")
         for i, candidate in enumerate(candidates_compositions):
-            print("candidate_" + str(i) + ":")
+            print("\tcandidate_" + str(i) + ":")
             for component in candidate:
-                print(str(component) + "\n")
+                print(str(component))
             print("\n")
 
         return candidates_compositions

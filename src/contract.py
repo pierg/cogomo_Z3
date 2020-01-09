@@ -112,6 +112,10 @@ class Contract(object):
         else:
             self.assumptions.append(assumption)
 
+    def add_guarantees(self, guarantees):
+        for guarantee in guarantees:
+            self.add_guarantee(guarantee)
+
     def add_guarantee(self, guarantee):
         """Adds a guarantee to the contract guarantees
 
@@ -121,7 +125,7 @@ class Contract(object):
         if isinstance(guarantee, str):
             self.guarantees.append(eval(guarantee))
         else:
-            self.assumptions.append(guarantee)
+            self.guarantees.append(guarantee)
 
     def get_assumptions(self):
         return self.assumptions

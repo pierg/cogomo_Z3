@@ -272,6 +272,19 @@ def is_a_refinement(refined_contract, abstracted_contract):
     return a_check and g_check
 
 
+
+def is_refinement_correct(refined_contract, abstracted_contract):
+    """
+    Check if A1 >= A2 and if G1 <= G2
+    """
+
+    a_check = is_set_smaller_or_equal(abstracted_contract.get_assumptions(), refined_contract.get_assumptions())
+
+    g_check = is_set_smaller_or_equal(refined_contract.get_guarantees(), abstracted_contract.get_guarantees())
+
+    return a_check and g_check
+
+
 def refine_goal(abstract_goal, refined_goal):
     """
 
@@ -431,50 +444,40 @@ def greedy_selection(candidate_compositions):
 
         """Dict: candidate_id -> points"""
         candidates_points = {}
-        """Dict: candidate_id -> list of components"""
-        candidates_list = {}
+        for candidate in best_candidates:
+            candidates_points[tuple(candidate)] = 0
 
-        """Generate all pairs"""
-        for candidate in it.permutations(best_candidates):
-            i = iter(candidate)
-            candidate_pairs = zip(i, i)
+        print("Generating pairs for all " + str(len(best_candidates)) + " candidates")
+        candidate_pairs = it.combinations(best_candidates, 2)
 
-        """Assign points if one candidate refine another"""
-        for i, pair in enumerate(candidate_pairs):
-            candidates_points["candidate_0_" + str(i)] = 0
-            candidates_points["candidate_1_" + str(i)] = 0
-            candidates_list["candidate_0_" + str(i)] = pair[0]
-            candidates_list["candidate_1_" + str(i)] = pair[1]
+        n_comparisons = 0
+        for candidate_a, candidate_b in candidate_pairs:
 
-            pair_0_assumptions = set([])
-            pair_1_assumptions = set([])
-            pair_0_gurantees = set([])
-            pair_1_gurantees = set([])
+            contract_a = Contract()
+            contract_b = Contract()
 
-            for component in pair[0]:
-                for elem in component.get_assumptions():
-                    pair_0_assumptions.add(elem)
-                for elem in component.get_guarantees():
-                    pair_0_gurantees.add(elem)
-            for component in pair[1]:
-                for elem in component.get_assumptions():
-                    pair_1_assumptions.add(elem)
-                for elem in component.get_guarantees():
-                    pair_1_gurantees.add(elem)
+            for component_a in candidate_a:
+                contract_a.add_assumptions(component_a.get_assumptions())
+                contract_a.add_guarantees(component_a.get_guarantees())
 
-            check_guarantees = is_set_smaller_or_equal(list(pair_0_gurantees), list(pair_1_gurantees))
-            check_assumptions = is_set_smaller_or_equal(list(pair_1_assumptions), list(pair_0_assumptions))
+            for component_b in candidate_b:
+                contract_b.add_assumptions(component_b.get_assumptions())
+                contract_b.add_guarantees(component_b.get_guarantees())
 
-            if check_guarantees and check_assumptions:
-                candidates_points["candidate_0_" + str(i)] += 1
+            if is_refinement_correct(contract_a, contract_b):
+                candidates_points[tuple(candidate_a)] += 1
             else:
-                candidates_points["candidate_1_" + str(i)] += 1
+                candidates_points[tuple(candidate_b)] += 1
 
+            n_comparisons += 1
+
+
+        print(str(n_comparisons) + " comparisons have been made")
         """Extract the candidate with the highest score (the most refined)"""
         best_candidate = max(candidates_points.items(), key=operator.itemgetter(1))[0]
 
         print("\tgreedly seelected the best candidate based on biggest assumption set")
-        return candidates_list[best_candidate]
+        return list(best_candidate)
 
 
 def merge_two_dicts(x, y):
