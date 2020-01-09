@@ -51,7 +51,7 @@ def gen_file(n_props, n_comps):
             component_library = ComponentsLibrary(name="cogomo")
 
                 '''))
-        n_props_total = int(n_props * n_comps / args.r)
+        n_props_total = int(n_props * n_comps / args.ratio)
         for x in range(0, n_props_total + 1):
             f.write(textwrap.dedent('''\
                 p{0} = Bool('p{1}')
@@ -112,6 +112,8 @@ def gen_file(n_props, n_comps):
                     "Contract(assumptions=[], guarantees=[p{0} == True])))\n".format(str(g)))
             f.write("""\
     elapsed_time = time.time() - start_time
+    if elapsed_time > 10:
+        print("LONG TIME - CHECK HERE")
     if n in times:
         times[n].append(elapsed_time)
     else:
