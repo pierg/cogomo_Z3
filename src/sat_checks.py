@@ -150,7 +150,7 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
 
     result, model = z3_validity_check(Implies(refinement, abstract))
 
-    print("\t" + result)
+    print("\t" + str(result))
 
     return result
 
