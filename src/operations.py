@@ -170,7 +170,7 @@ def components_selection(component_library, specification):
 
     selected_components = canditate_selected
     while True:
-        print("Looking for components that regine thee assumptions")
+        print("Looking for components that regine the assumptions")
         for component in selected_components:
             """Iteretevely check in the library if assumptions are provided by other contracts and compose"""
             component_assumptions = component.get_assumptions()
