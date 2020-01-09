@@ -100,6 +100,7 @@ def gen_file(n_props, n_comps):
                         ''').format(n_props, n_comps))
 
         f.write("    times = {}\n")
+        f.write("    all_times = {}\n")
 
         for i, g in enumerate(list_of_guarantees):
             f.write("    print('')\n".format(n_prop, n_comp))
@@ -112,16 +113,17 @@ def gen_file(n_props, n_comps):
                     "Contract(assumptions=[], guarantees=[p{0} == True])))\n".format(str(g)))
             f.write("""\
     elapsed_time = time.time() - start_time
+    all_times["{0}_{1}_p{2}"] = elapsed_time
     if elapsed_time > 10:
         print("LONG TIME - CHECK HERE")
     if n in times:
         times[n].append(elapsed_time)
     else:
         times[n] = [elapsed_time]
-                    """)
+                    """.format(n_prop, n_comp, g))
             f.write("\n\n")
 
-        f.write("    return times\n\n")
+        f.write("    return times, all_times\n\n")
 
         f.write(textwrap.dedent('''\
 
@@ -130,18 +132,26 @@ def gen_file(n_props, n_comps):
                         ''').format(n_props, n_comps))
 
 
-def elaborate(folder, match_times_dict, comp_props_dict):
+def elaborate(folder, mean_match_times, mean_values, weighted_values, all_values):
 
-    with open(folder + '/comp_props_dict.csv', 'w') as f:
+    with open(folder + '/mean_values.csv', 'w') as f:
         w = csv.writer(f)
-        w.writerows(comp_props_dict.items())
+        w.writerows(mean_values.items())
 
-    with open(folder + '/match_times_dict.csv', 'w') as f:
+    with open(folder + '/weighted_values.csv', 'w') as f:
         w = csv.writer(f)
-        w.writerows(match_times_dict.items())
+        w.writerows(weighted_values.items())
+
+    with open(folder + '/all_values.csv', 'w') as f:
+        w = csv.writer(f)
+        w.writerows(all_values.items())
+
+    with open(folder + '/mean_match_times.csv', 'w') as f:
+        w = csv.writer(f)
+        w.writerows(mean_match_times.items())
 
     n_match_set = set()
-    for combination, results in match_times_dict.items():
+    for combination, results in mean_match_times.items():
         for n_match in results.keys():
             n_match_set.add(n_match)
 
@@ -151,10 +161,10 @@ def elaborate(folder, match_times_dict, comp_props_dict):
 
         for n_match in range(1, max(n_match_set)+1):
             f.write(str(n_match) + ",")
-            for i, (combination, results) in enumerate(match_times_dict.items()):
+            for i, (combination, results) in enumerate(mean_match_times.items()):
                 if n_match in results.keys():
                     f.write(str(results[n_match]))
-                if i < len(match_times_dict) -1:
+                if i < len(mean_match_times) -1:
                     f.write(",")
                 else:
                     f.write("\n")
@@ -200,8 +210,10 @@ if __name__ == '__main__':
 
         rf.write("""\
 if __name__ == '__main__':
-    match_times_dict = {}
-    comp_props_dict = {}
+    mean_match_times = {}
+    mean_values = {}
+    weighted_values = {}
+    all_values = {}
                  """)
         rf.write("\n\n")
 
@@ -212,15 +224,22 @@ if __name__ == '__main__':
                 rf.write("    logtofile('{0}','starting {1}_{2}...')\n".format(result_folder, n_prop, n_comp))
 
                 rf.write("""\
-    match_times_{0}_{1} = run_{0}_{1}()
+    match_times_{0}_{1}, all_times_{0}_{1} = run_{0}_{1}()
     for key, value in match_times_{0}_{1}.items():
         match_times_{0}_{1}[key] = mean(value)
-    match_times_dict[({0}, {1})] = match_times_{0}_{1}
-    comp_props_dict[({0}, {1})] = mean(match_times_{0}_{1}[k] for k in match_times_{0}_{1})
+    all_values.update(all_times_{0}_{1})
+    mean_match_times["{0}_{1}"] = match_times_{0}_{1}
+    mean_values["{0}_{1}"] = mean(list(all_times_{0}_{1}.values()))
+    n_matches = 0
+    total_means = 0
+    for matches, mean_val in mean_match_times["{0}_{1}"].items():
+        total_means += mean_val * matches
+        n_matches += 1
+    weighted_values["{0}_{1}"] = total_means / n_matches
                 """.format(n_prop, n_comp))
                 rf.write("\n")
                 rf.write("    logtofile('{0}','finished {1}_{2}')\n".format(result_folder, n_prop, n_comp))
-                rf.write("    elaborate('{}',match_times_dict, comp_props_dict)\n".format(result_folder))
+                rf.write("    elaborate('{}',mean_match_times, mean_values, weighted_values, all_values)\n".format(result_folder))
                 rf.write("\n\n")
 
         rf.write("    print('--------FINISHED--------')")
