@@ -165,7 +165,7 @@ def components_selection(component_library, specification):
 
     canditate_selected = greedy_selection(candidates_compositions)
     print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
-          str(len(candidates_compositions)) + "candidates")
+          str(len(candidates_compositions)) + " candidates")
 
     set_components_to_return.append(canditate_selected)
 
@@ -189,7 +189,7 @@ def components_selection(component_library, specification):
             """Greedly select one composition"""
             canditate_selected = greedy_selection(candidates_compositions)
             print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
-                  str(len(candidates_compositions)) + "candidates")
+                  str(len(candidates_compositions)) + " candidates")
 
             set_components_to_return.append(canditate_selected)
 
@@ -397,6 +397,7 @@ def greedy_selection(candidate_compositions):
 
     """If only one candidate return that one"""
     if len(candidate_compositions) == 1:
+        print("\tgreedly seelected the only candidate")
         return candidate_compositions[0]
 
     best_candidates = []
@@ -414,7 +415,7 @@ def greedy_selection(candidate_compositions):
             best_candidates.append(composition)
 
     if len(best_candidates) == 1:
-        print("Returning the best candidate based on cost")
+        print("\tgreedly seelected the best candidate based on cost")
         return best_candidates[0]
 
     else:
@@ -462,11 +463,9 @@ def greedy_selection(candidate_compositions):
                 candidates_points["candidate_1_" + str(i)] += 1
 
         """Extract the candidate with the highest score (the most refined)"""
-        print("Choosing the component with the best score out of:\n" + str(candidates_points.items()))
         best_candidate = max(candidates_points.items(), key=operator.itemgetter(1))[0]
-        print("Best candidate:\n" + best_candidate)
 
-        print("Returning the best candidate based on assumption set")
+        print("\tgreedly seelected the best candidate based on biggest assumption set")
         return candidates_list[best_candidate]
 
 
