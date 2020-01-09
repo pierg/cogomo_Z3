@@ -2,5 +2,41 @@ docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "-
 
 docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmax=8" "--cmin=20"
 
-docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmin=2"
+docker run -d -v ~/evaluation/:/home/cogomo_Z3/evaluation pmallozzi/cogomo-z3 "--pmin=2" "--pmax=8" "--cmax=50"
 
+
+docker logs -f cogomo
+docker logs cogomo
+
+docker inspect --format='{{.LogPath}}' cogomo
+
+docker logs -f cogomo &> log.txt &
+
+rm logs.txt
+docker logs -f cogomo &> log.txt &
+
+
+UBU_1
+docker run --name cogomo -d -v ~/evaluation/:/home/cogomo_Z3/evaluation/results pmallozzi/cogomo-z3 \
+"--pmin=2" "--pmax=10" "--cmin=10" "--cmax=100" "--pstep=2" "--cstep=10"
+
+
+
+UBU_2
+docker run --name cogomo -d -v ~/evaluation/:/home/cogomo_Z3/evaluation/results pmallozzi/cogomo-z3 \
+"--pmin=10" "--pmax=50" "--cmin=100" "--cmax=500" "--pstep=10" "--cstep=50"
+
+
+
+UBU_3
+docker run --name cogomo -d -v ~/evaluation/:/home/cogomo_Z3/evaluation/results pmallozzi/cogomo-z3 \
+"--pmin=10" "--pmax=50" "--cmin=100" "--cmax=500" "--pstep=10" "--cstep=50"
+
+
+P1
+docker run --name cogomo -d -v ~/evaluation/:/home/cogomo_Z3/evaluation/results pmallozzi/cogomo-z3 \
+"--pmin=10" "--pmax=50" "--cmin=100" "--cmax=500" "--pstep=10" "--cstep=50"
+
+P1
+docker run --name cogomo -d -v ~/evaluation/:/home/cogomo_Z3/evaluation/results pmallozzi/cogomo-z3 \
+"--pmin=10" "--pmax=50" "--cmin=100" "--cmax=500" "--pstep=10" "--cstep=50"
