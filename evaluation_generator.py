@@ -221,3 +221,5 @@ if __name__ == '__main__':
                 rf.write("    elaborate('{}',match_times_dict, comp_props_dict)\n".format(result_folder))
                 rf.write("\n\n")
 
+        rf.write("    print('--------FINISHED--------')")
+
