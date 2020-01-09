@@ -234,7 +234,7 @@ if __name__ == '__main__':
     total_means = 0
     for matches, mean_val in mean_match_times["{0}_{1}"].items():
         total_means += mean_val * matches
-        n_matches += 1
+        n_matches += matches
     weighted_values["{0}_{1}"] = total_means / n_matches
                 """.format(n_prop, n_comp))
                 rf.write("\n")
