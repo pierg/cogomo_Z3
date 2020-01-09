@@ -161,40 +161,51 @@ def components_selection(component_library, specification):
         print(e)
         return []
 
-    canditate_selected = greedy_selection(candidates_compositions)
-    print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
+    first_selected_components = greedy_selection(candidates_compositions)
+    print("Selected components " + str([component.get_id() for component in first_selected_components]) + " out of " +
           str(len(candidates_compositions)) + " candidates")
 
-    set_components_to_return.append(canditate_selected)
+    set_components_to_return.append(first_selected_components)
 
-    selected_components = canditate_selected
-    component_selected = 0
-    while True:
+    components_to_search = first_selected_components.copy()
+    component_already_searched = []
+
+    while len(components_to_search) != 0:
+
         print("Looking for components that refine the assumptions")
-        for component in selected_components:
-            """Iteretevely check in the library if assumptions are provided by other contracts and compose"""
+        components_to_search_copy = components_to_search.copy()
+
+        for component in components_to_search_copy:
+
+            """Remove component from list of components to search 
+            and keep track that it has been searched (avoid loops)"""
+            components_to_search.remove(component)
+            component_already_searched.append(component)
+
             component_assumptions = component.get_assumptions()
 
             """Extract all candidate compositions that can provide the assumptions, if they exists"""
             try:
                 candidates_compositions = component_library.extract_selection(spec_assumptions, component_assumptions)
-                component_selected += 1
             except Exception as e:
                 print(e)
                 print("No selection found")
                 continue
 
             """Greedly select one composition"""
-            canditate_selected = greedy_selection(candidates_compositions)
-            print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
+            new_selected_components = greedy_selection(candidates_compositions)
+            print("Selected components " + str(
+                [component.get_id() for component in new_selected_components]) + " out of " +
                   str(len(candidates_compositions)) + " candidates")
 
-            set_components_to_return.append(canditate_selected)
+            if new_selected_components not in set_components_to_return:
+                set_components_to_return.append(new_selected_components)
 
-        if selected_components == canditate_selected:
-            print("Finishing..")
-            break
-        selected_components = canditate_selected
+            """Add components to be searched only if they have not already been searched before"""
+            for comp in new_selected_components:
+                if comp not in component_already_searched:
+                    components_to_search.append(comp)
+
 
     """Flattening list of selections and eliminating duplicates"""
     flat_list_refining_components = list(set([item for sublist in set_components_to_return for item in sublist]))
@@ -209,7 +220,6 @@ def components_selection(component_library, specification):
         print(ret)
 
     return flat_list_refining_components
-
 
 
 def propagate_assumptions(abstract_goal, refined_goal):

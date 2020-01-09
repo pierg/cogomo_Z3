@@ -12,7 +12,7 @@ p4 = Bool('p4')
 component_library.add_components(
     [
         Component(id="c0", assumptions=[p0 == True], guarantees=[p1 == True]),
-        Component(id="c1", assumptions=[p1 == True], guarantees=[p2 == True]),
+        Component(id="c1", assumptions=[p3 == True], guarantees=[p2 == True]),
         Component(id="c2", assumptions=[p2 == True], guarantees=[p3 == True]),
         Component(id="c3", assumptions=[p3 == True], guarantees=[p4 == True])
     ])

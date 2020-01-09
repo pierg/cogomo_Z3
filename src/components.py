@@ -92,7 +92,7 @@ class ComponentsLibrary:
         and are consistent with assumptions
         :param assumptions: List of assumptions
         :param to_be_refined: List of propositions
-        :return: 
+        :return: List
         """
 
         candidates_for_each_proposition = {}
