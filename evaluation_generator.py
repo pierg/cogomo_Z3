@@ -110,7 +110,6 @@ def gen_file(n_props, n_comps):
         times[n].append(elapsed_time)
     else:
         times[n] = [elapsed_time]
-    print(times)
                     """)
             f.write("\n\n")
 
