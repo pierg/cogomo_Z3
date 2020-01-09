@@ -140,9 +140,9 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
 
     if isinstance(props_abstracted, list):
         if len(props_abstracted) == 1:
-            abstract = props_refined[0]
+            abstract = props_abstracted[0]
         else:
-            abstract = And(props_refined)
+            abstract = And(props_abstracted)
     elif isinstance(props_abstracted, BoolRef):
         abstract = props_abstracted
 
