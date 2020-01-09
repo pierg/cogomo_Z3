@@ -177,10 +177,10 @@ def components_selection(component_library, specification):
 
             """Extract all candidate compositions that can provide the assumptions, if they exists"""
             try:
-                print("Extract selection: " + spec_assumptions, " \t " + component_assumptions)
                 candidates_compositions = component_library.extract_selection(spec_assumptions, component_assumptions)
                 component_selected += 1
             except Exception as e:
+                print(e)
                 print("No selection found")
                 continue
 
