@@ -101,6 +101,7 @@ def gen_file(n_props, n_comps):
 
         f.write("    times = {}\n")
         f.write("    all_times = {}\n")
+        f.write("    weighted_all_times = {}\n")
 
         for i, g in enumerate(list_of_guarantees):
             f.write("    print('')\n".format(n_prop, n_comp))
@@ -114,8 +115,8 @@ def gen_file(n_props, n_comps):
             f.write("""\
     elapsed_time = time.time() - start_time
     all_times["{0}_{1}_p{2}"] = elapsed_time
-    if elapsed_time > 10:
-        print("LONG TIME - CHECK HERE")
+    weighted_all_times["{0}_{1}_p{2}"] = elapsed_time / n
+    
     if n in times:
         times[n].append(elapsed_time)
     else:
@@ -123,7 +124,7 @@ def gen_file(n_props, n_comps):
                     """.format(n_prop, n_comp, g))
             f.write("\n\n")
 
-        f.write("    return times, all_times\n\n")
+        f.write("    return times, all_times, weighted_all_times\n\n")
 
         f.write(textwrap.dedent('''\
 
@@ -224,19 +225,14 @@ if __name__ == '__main__':
                 rf.write("    logtofile('{0}','starting {1}_{2}...')\n".format(result_folder, n_prop, n_comp))
 
                 rf.write("""\
-    match_times_{0}_{1}, all_times_{0}_{1} = run_{0}_{1}()
+    match_times_{0}_{1}, all_times_{0}_{1}, weighted_all_times_{0}_{1} = run_{0}_{1}()
     for key, value in match_times_{0}_{1}.items():
         match_times_{0}_{1}[key] = mean(value)
     all_values.update(all_times_{0}_{1})
     mean_match_times["{0}_{1}"] = match_times_{0}_{1}
     mean_values["{0}_{1}"] = mean(list(all_times_{0}_{1}.values()))
-    n_matches = 0
-    total_means = 0
-    for matches, mean_val in mean_match_times["{0}_{1}"].items():
-        total_means += mean_val * matches
-        n_matches += matches
-    weighted_values["{0}_{1}"] = total_means / n_matches
-                """.format(n_prop, n_comp))
+    weighted_values["{0}_{1}"] = mean(list(weighted_all_times_{0}_{1}.values()))
+                    """.format(n_prop, n_comp))
                 rf.write("\n")
                 rf.write("    logtofile('{0}','finished {1}_{2}')\n".format(result_folder, n_prop, n_comp))
                 rf.write("    elaborate('{}',mean_match_times, mean_values, weighted_values, all_values)\n".format(result_folder))
