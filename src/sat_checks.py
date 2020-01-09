@@ -146,11 +146,11 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
     elif isinstance(props_abstracted, BoolRef):
         abstract = props_abstracted
 
-    print("refined:\t" + str(refinement) + "\nabstract:\t" + str(abstract))
+    print("\t\t\trefined:\t" + str(refinement) + "\n\t\t\tabstract:\t" + str(abstract))
 
     result, model = z3_validity_check(Implies(refinement, abstract))
 
-    print("\t" + str(result))
+    print("\t\t\t" + str(result))
 
     return result
 
