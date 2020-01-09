@@ -170,7 +170,7 @@ def components_selection(component_library, specification):
 
     selected_components = canditate_selected
     while True:
-        print("Looking for components that regine the assumptions")
+        print("Looking for components that refine the assumptions")
         for component in selected_components:
             """Iteretevely check in the library if assumptions are provided by other contracts and compose"""
             component_assumptions = component.get_assumptions()
@@ -195,7 +195,7 @@ def components_selection(component_library, specification):
     """Flattening list of selections and eliminating duplicates"""
     flat_list_refining_components = list(set([item for sublist in set_components_to_return for item in sublist]))
 
-    print("\n\n" + str(len(flat_list_refining_components)) +
+    print(str(len(flat_list_refining_components)) +
           " components found in the library that composed refine the specifications:")
 
     for n, l in enumerate(set_components_to_return):
