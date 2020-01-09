@@ -37,6 +37,17 @@ class Component(Contract):
     def get_id(self):
         return self.id
 
+    def __str__(self):
+        """Override the print behavior"""
+        astr = 'componend id:\t' + self.id + '\n'
+        astr += 'assumptions:\t'
+        for assumption in self.assumptions:
+            astr += str(assumption) + ', '
+        astr = astr[:-2] + '\nguarantees:\t'
+        for guarantee in self.guarantees:
+            astr += str(guarantee) + ', '
+        return astr[:-2] + '\n'
+
 
 class ComponentsLibrary:
 
@@ -131,8 +142,9 @@ class ComponentsLibrary:
         candidates_compositions[:] = it.filterfalse(incomposable_check, candidates_compositions)
 
         print(str(len(candidates_compositions)) + " candidate compositions found:")
-        for candidate in candidates_compositions:
-            print(str(candidate))
+        for i, candidate in enumerate(candidates_compositions):
+            for component in candidate:
+                print(str(component) + "\n")
 
         return candidates_compositions
 
