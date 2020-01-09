@@ -161,10 +161,11 @@ def components_selection(component_library, specification):
         print(e)
         return []
 
-    print("First component found")
+    print("First " + str(len(candidates_compositions)) + " candidate compositions found")
 
-    """Greedly select one composition"""
     canditate_selected = greedy_selection(candidates_compositions)
+    print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
+          str(len(candidates_compositions)) + "candidates")
 
     set_components_to_return.append(canditate_selected)
 
@@ -186,8 +187,9 @@ def components_selection(component_library, specification):
                 continue
 
             """Greedly select one composition"""
-            print("Selecting component n: " + str(component_selected) + " out of " + str(len(candidates_compositions)) + "candidates")
             canditate_selected = greedy_selection(candidates_compositions)
+            print("Selected components " + str([component.get_id() for component in canditate_selected]) + " out of " +
+                  str(len(candidates_compositions)) + "candidates")
 
             set_components_to_return.append(canditate_selected)
 
@@ -392,10 +394,15 @@ def greedy_selection(candidate_compositions):
     (bigger assumptions, smaller guarantees)
     :param: List of List
     """
+
+    """If only one candidate return that one"""
+    if len(candidate_compositions) == 1:
+        return candidate_compositions[0]
+
     best_candidates = []
     lowest_cost = float('inf')
 
-    print("Choosing greedly the component...")
+    print("Choosing greedly one composition...")
 
     for composition in candidate_compositions:
         cost = 0

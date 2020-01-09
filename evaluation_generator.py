@@ -68,16 +68,19 @@ def gen_file(n_props, n_comps):
             f.write('\t\tComponent(id=')
             f.write('"c{0}", assumptions=['.format(i))
             n_ag = int(n_props / 2)
+            assumptions_chosen = []
             # writing the assumptions
             for p in range(0, n_ag):
-                f.write('p{0}'.format(randint(0, n_props_total)))
+                assumption_chosen = randint(0, n_props_total)
+                assumptions_chosen.append(assumption_chosen)
+                f.write('p{0}'.format(assumption_chosen))
                 f.write(' == True')
                 if p != n_ag - 1:
                     f.write(', ')
             f.write('], guarantees=[')
             # writing the guarantees
             for p in range(0, n_ag):
-                g_gen = randint(0, n_props_total)
+                g_gen = random.choice([i for i in range(0, n_props_total) if i not in assumptions_chosen])
                 list_of_guarantees.append(g_gen)
                 f.write('p{0}'.format(g_gen))
                 f.write(' == True')
