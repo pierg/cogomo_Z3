@@ -14,6 +14,7 @@ parser.add_argument('--pmin', help='# propositions min', type= int, default= 2)
 parser.add_argument('--pmax', help='# propositions max', type= int, default= 20)
 parser.add_argument('--cstep', help='step size component', type= int, default= 10)
 parser.add_argument('--pstep', help='step size propositions', type= int, default= 2)
+parser.add_argument('--ratio', help='ratio of propositions r: # = n_props*n_comps / r', type= int, default= 2)
 
 try:
     args = parser.parse_args()
@@ -50,7 +51,7 @@ def gen_file(n_props, n_comps):
             component_library = ComponentsLibrary(name="cogomo")
 
                 '''))
-        n_props_total = int(n_props * n_comps / 2)
+        n_props_total = int(n_props * n_comps / args.r)
         for x in range(0, n_props_total + 1):
             f.write(textwrap.dedent('''\
                 p{0} = Bool('p{1}')
