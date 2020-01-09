@@ -32,7 +32,7 @@ evaluation_folder = os.path.dirname(os.path.abspath(__file__)) + "/evaluation"
 if not os.path.exists(evaluation_folder):
     os.makedirs(evaluation_folder)
 
-result_folder_id = "/results_" + str(args.pmin) + "." + \
+result_folder_id = "/results/res_" + str(args.pmin) + "." + \
                     str(args.pmax) + "." + str(args.pstep) + "_" + str(args.cmin) + "." + str(args.cmax) + "." +\
                     str(args.cstep) + "_" + idname
 
@@ -157,10 +157,7 @@ def elaborate(folder, match_times_dict, comp_props_dict):
 
 
 def logtofile(folder, message):
-
-    with open(folder + '/log.txt', 'w') as f:
-
-        f.write(message+"\n")
+    pass
 
 
 
