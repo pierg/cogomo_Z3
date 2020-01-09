@@ -128,6 +128,8 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
     refinement = None
     abstract = None
 
+    print("is \t\t" + props_refined + "\n contained in\t" + props_abstracted)
+
     """Check Attributes"""
     if isinstance(props_refined, list):
         if len(props_refined) == 1:

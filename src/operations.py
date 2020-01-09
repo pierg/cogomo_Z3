@@ -169,6 +169,7 @@ def components_selection(component_library, specification):
     set_components_to_return.append(canditate_selected)
 
     selected_components = canditate_selected
+    component_selected = 0
     while True:
         print("Looking for components that refine the assumptions")
         for component in selected_components:
@@ -177,12 +178,15 @@ def components_selection(component_library, specification):
 
             """Extract all candidate compositions that can provide the assumptions, if they exists"""
             try:
+                print("Extract selection: " + spec_assumptions, " \t " + component_assumptions)
                 candidates_compositions = component_library.extract_selection(spec_assumptions, component_assumptions)
+                component_selected += 1
             except Exception as e:
-                print("No further refinement possible")
+                print("No selection found")
                 continue
 
             """Greedly select one composition"""
+            print("Selecting component n: " + str(component_selected) + " out of " + str(len(candidates_compositions)) + "candidates")
             canditate_selected = greedy_selection(candidates_compositions)
 
             set_components_to_return.append(canditate_selected)
@@ -451,7 +455,9 @@ def greedy_selection(candidate_compositions):
                 candidates_points["candidate_1_" + str(i)] += 1
 
         """Extract the candidate with the highest score (the most refined)"""
+        print("Choosing the component with the best score out of:\n" + str(candidates_points.items()))
         best_candidate = max(candidates_points.items(), key=operator.itemgetter(1))[0]
+        print("Best candidate:\n" + best_candidate)
 
         print("Returning the best candidate based on assumption set")
         return candidates_list[best_candidate]
