@@ -98,7 +98,9 @@ def gen_file(n_props, n_comps):
         f.write("    times = {}\n")
 
         for g in list_of_guarantees:
-            f.write("    print('\n\n\nStarting evaluation for {0} propositions and {1} components')\n".format(n_prop, n_comp))
+            f.write("    print('')\n".format(n_prop, n_comp))
+            f.write("    print('')\n".format(n_prop, n_comp))
+            f.write("    print('Starting evaluation for {0} propositions and {1} components')\n".format(n_prop, n_comp))
             f.write("    start_time = time.time()\n")
             f.write("    n = len(components_selection(component_library, "
                     "Contract(assumptions=[], guarantees=[p{0} == True])))\n".format(str(g)))
