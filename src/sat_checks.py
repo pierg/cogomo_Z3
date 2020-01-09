@@ -86,7 +86,7 @@ def check_ports_are_compatible(prop_1, prop_2):
         if not isinstance(elem, BoolRef):
             raise Exception("Attribute Error")
 
-        list_var = re.split('[\s\d\W]', str(elem))
+        list_var = re.split('(?<![A-Za-z0-9.])[0-9.]+|[\s\W]|(?<![\w\d])True(?![\w\d])|(?<![\w\d])False(?![\w\d])', str(elem))
 
         for var in list_var:
             stripped = var.strip()
@@ -97,7 +97,7 @@ def check_ports_are_compatible(prop_1, prop_2):
         if not isinstance(elem, BoolRef):
             raise Exception("Attribute Error")
 
-        list_var = re.split('[\s\d\W]', str(elem))
+        list_var = re.split('(?<![A-Za-z0-9.])[0-9.]+|[\s\W]|(?<![\w\d])True(?![\w\d])|(?<![\w\d])False(?![\w\d])', str(elem))
 
         for var in list_var:
             stripped = var.strip()
@@ -128,7 +128,6 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
     refinement = None
     abstract = None
 
-    print("is \t\t" + props_refined + "\n contained in\t" + props_abstracted)
 
     """Check Attributes"""
     if isinstance(props_refined, list):
@@ -147,7 +146,11 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
     elif isinstance(props_abstracted, BoolRef):
         abstract = props_abstracted
 
+    print("refined:\t" + str(refinement) + "\nabstract:\t" + str(abstract))
+
     result, model = z3_validity_check(Implies(refinement, abstract))
+
+    print("\t" + result)
 
     return result
 
