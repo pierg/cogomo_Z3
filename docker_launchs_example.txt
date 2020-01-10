@@ -16,7 +16,7 @@ UBU_1
 docker run --name cogomo -d \
 -v ~/:/home/cogomo_Z3/evaluation/results -v ~/evaluation:/home/cogomo_Z3/evaluation \
 pmallozzi/cogomo-z3 \
-"--pmin=2" "--pmax=10" "--cmin=10" "--cmax=100" "--pstep=2" "--cstep=10"
+"--pmin=2" "--pmax=32" "--cmin=10" "--cmax=100" "--pstep=2" "--cstep=10"
 
 
 

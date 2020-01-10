@@ -14,6 +14,8 @@ parser.add_argument('--pmin', help='# propositions min', type= int, default= 2)
 parser.add_argument('--pmax', help='# propositions max', type= int, default= 20)
 parser.add_argument('--cstep', help='step size component', type= int, default= 10)
 parser.add_argument('--pstep', help='step size propositions', type= int, default= 2)
+parser.add_argument('--cxstep', help='coefficient determing the next step', type= int, default= -1)
+parser.add_argument('--pxstep', help='coefficient determing the next step', type= int, default= -1)
 parser.add_argument('--ratio', help='ratio of propositions r: # = n_props*n_comps / r', type= int, default= 2)
 
 try:
@@ -187,14 +189,28 @@ if __name__ == '__main__':
     n_comps = []
 
     p = args.pmin
-    for i in range(int((args.pmax-args.pmin)/args.pstep)+1):
-        n_props.append(p)
-        p += args.pstep
+
+    if (args.pxstep != -1):
+        i = args.pmin
+        while(i <= args.pmax):
+            n_props.append(i)
+            i = i * args.pxstep
+    else:
+        for i in range(int((args.pmax-args.pmin)/args.pstep)+1):
+            n_props.append(p)
+            p += args.pstep
 
     c = args.cmin
-    for i in range(int((args.cmax-args.cmin)/args.cstep)+1):
-        n_comps.append(c)
-        c += args.cstep
+
+    if (args.cxstep != -1):
+        i = args.cmin
+        while(i <= args.cmax):
+            n_comps.append(i)
+            i = i * args.cxstep
+    else:
+        for i in range(int((args.cmax-args.cmin)/args.cstep)+1):
+            n_comps.append(c)
+            c += args.cstep
 
     main_flag = False
 
