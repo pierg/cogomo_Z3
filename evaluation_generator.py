@@ -17,6 +17,7 @@ parser.add_argument('--pstep', help='step size propositions', type= int, default
 parser.add_argument('--cxstep', help='coefficient determing the next step', type= int, default= -1)
 parser.add_argument('--pxstep', help='coefficient determing the next step', type= int, default= -1)
 parser.add_argument('--ratio', help='ratio of propositions r: # = n_props*n_comps / r', type= int, default= 2)
+parser.add_argument('--nexp', help='number of experiments for each configuration', type= int, default= -1)
 
 try:
     args = parser.parse_args()
@@ -105,7 +106,11 @@ def gen_file(n_props, n_comps):
         f.write("    all_times = {}\n")
         f.write("    weighted_all_times = {}\n")
 
-        for i, g in enumerate(list_of_guarantees):
+        pool_of_guarantees = list_of_guarantees
+        if args.nexp != -1:
+            pool_of_guarantees = random.sample(list_of_guarantees, args.nexp)
+
+        for i, g in enumerate(pool_of_guarantees):
             f.write("    print('')\n".format(n_prop, n_comp))
             f.write("    print('')\n".format(n_prop, n_comp))
             f.write("    print('Starting evaluation for {0} propositions and {1} components "
