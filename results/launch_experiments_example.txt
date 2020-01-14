@@ -1,0 +1,11 @@
+# Launch configuration from 4 to 8 propositions and 100 to 500 components, run 100 experiments for each configuration
+docker run --name cogomo -d \
+-v ~/:/home/cogomo_Z3/evaluation/results -v ~/evaluation:/home/cogomo_Z3/evaluation \
+pmallozzi/cogomo-z3 \
+"--pmin=4" "--pmax=8" "--cmin=100" "--cmax=500" "--pstep=4" "--cstep=100" "--nexp=100"
+
+# Save logs to file
+docker logs -f cogomo &> log.txt &
+
+# Observe the logs (outputs)
+docker logs -f cogomo
