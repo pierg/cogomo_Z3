@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 if __name__ == "__main__":
     """Parse Goals from Structured Text File"""
 
-    goals = parse('./spec/platooning.txt')
+    goals = parse('./input_files/platooning.txt')
 
     """Declare New Goals that are built on top of existing goals"""
     keep_short_distance = None

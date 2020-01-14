@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 def incompatible_goals():
     """Parse Goals from Structured Text File"""
 
-    goals = parse('../spec/incompatible_goals.txt')
+    goals = parse('../input_files/incompatible_goals.txt')
 
     """Declare New Goals that are built on top of existing goals"""
 
@@ -35,7 +35,7 @@ def incompatible_goals():
 def inconsistent_goals():
     """Parse Goals from Structured Text File"""
 
-    goals = parse('../spec/inconsistent_goals.txt')
+    goals = parse('../input_files/inconsistent_goals.txt')
 
     """Declare New Goals that are built on top of existing goals"""
 
@@ -48,7 +48,7 @@ def inconsistent_goals():
 def priority_goals():
     """Parse Goals from Structured Text File"""
 
-    goals = parse('../spec/priority_goals.txt')
+    goals = parse('../input_files/priority_goals.txt')
 
     """Declare New Goals that are built on top of existing goals"""
 
@@ -61,7 +61,7 @@ def priority_goals():
 def composition_example():
     """Parse Goals from Structured Text File"""
 
-    goals = parse('../spec/composable_goals.txt')
+    goals = parse('../input_files/composable_goals.txt')
 
     composed_goals = compose_goals(
         [goals["component_A"], goals["component_C"]],
@@ -81,7 +81,7 @@ def composition_example():
 def conjoing_and_prioritise_goals():
     """Parse Goals from Structured Text File"""
 
-    goals = parse('../spec/platooning.txt')
+    goals = parse('../input_files/platooning.txt')
 
     """Declare New Goals that are built on top of existing goals"""
     keep_short_distance = None

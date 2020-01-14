@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 
 
 def case1():
-    goals = parse('../spec/test_completeness.txt')
+    goals = parse('../input_files/test_completeness.txt')
 
     try:
         refine_goal(goals['communicate_with_platoon_leader_abstracted'],
@@ -28,7 +28,7 @@ def case1():
         print(goals['communicate_with_platoon_leader_refined_complete'])
 
 def case2():
-    goals = parse('../spec/decomposition.txt')
+    goals = parse('../input_files/decomposition.txt')
 
     try:
         communicate_with_platoon_leader_refined = compose_goals([
@@ -49,7 +49,7 @@ def case2():
 
 if __name__ == "__main__":
 
-    goals = parse('../spec/decomposition.txt')
+    goals = parse('../input_files/decomposition.txt')
 
     try:
         communicate_with_platoon_leader_refined = compose_goals([
