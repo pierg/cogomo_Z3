@@ -21,13 +21,11 @@ GOAL:
 	DESCRIPTION:
         description of goal_2
 	VARIABLES:
-		a   := boolean
-		b   := boolean
 		x   := 1..100
 		y   := 5..50
+		c   := boolean
 	ASSUMPTIONS:
-		a
-		b
+		c
 	GUARANTEES:
 		x < 10
 		y < 15

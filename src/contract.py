@@ -56,7 +56,7 @@ class Contract(object):
 
         variables_copy = self.variables.copy()
         variables_copy.update(variables_dictionary)
-        self.variables = variables_dictionary
+        self.variables = variables_copy
 
     def get_variables(self):
 

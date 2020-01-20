@@ -130,17 +130,16 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
     :return: lower priority goal
     """
 
+    variables = {}
     stronger_assumptions_list = []
 
     for contract in first_priority_goal.get_contracts():
+        variables.update(contract.get_variables())
         stronger_assumptions_list.append(And(contract.get_assumptions()))
 
-    print(second_priority_goal)
-
     for contract in second_priority_goal.get_contracts():
+        contract.merge_variables(variables)
         contract.add_assumption(Not(Or(stronger_assumptions_list)))
-
-    print(second_priority_goal)
 
 
 def components_selection(component_library, specification):
