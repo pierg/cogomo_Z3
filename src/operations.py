@@ -430,8 +430,10 @@ def greedy_selection(candidate_compositions):
         cost = 0
         for component in composition:
             cost += component.cost()
+            """Adding a cost for the number of components"""
+            cost += 0.1
         if cost < lowest_cost:
-            best_candidates.append(composition)
+            best_candidates = [composition]
         elif cost == lowest_cost:
             best_candidates.append(composition)
 
