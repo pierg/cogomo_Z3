@@ -1,0 +1,40 @@
+GOAL:
+	NAME:
+		goal_1
+	DESCRIPTION:
+        description of goal_1
+	VARIABLES:
+		a   := boolean
+	    x   := 1..100
+	ASSUMPTIONS:
+		a
+	GUARANTEES:
+		x > 10
+
+GOAL:
+	NAME:
+		goal_2
+	DESCRIPTION:
+        description of goal_2
+	VARIABLES:
+		a   := boolean
+	    x   := 1..100
+	ASSUMPTIONS:
+		a
+	GUARANTEES:
+		x < 10
+
+GOAL:
+	NAME:
+		goal_3
+	DESCRIPTION:
+        description of goal_3
+	VARIABLES:
+		a   := boolean
+	    x   := 1..100
+	ASSUMPTIONS:
+		!a
+	GUARANTEES:
+		x < 10
+
+ENDGOALS

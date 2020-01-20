@@ -70,30 +70,31 @@ def conjoin_goals(goals, name="", description=""):
 
     """For each contract pair, checks the consistency of the guarantees among the goals that have common assumptions"""
     for pair_of_goals in it.combinations(goals, r=2):
-        """Goal_name -> List of Assumptions"""
-        assumptions = {}
 
-        """Goal_name -> List of Guarantees"""
-        guarantees = {}
+        assumptions_set = []
+        guarantees_set = []
 
         for contract_1 in pair_of_goals[0].get_contracts():
 
-            assumptions[pair_of_goals[0].get_name() + "_assumptions"] = contract_1.get_assumptions()
-            guarantees[pair_of_goals[0].get_name() + "_guarantees"] = contract_1.get_guarantees()
+            assumptions_set.extend(contract_1.get_assumptions())
+
+            guarantees_set.extend(contract_1.get_guarantees())
 
             for contract_2 in pair_of_goals[1].get_contracts():
 
-                assumptions[pair_of_goals[1].get_name() + "_assumptions"] = contract_2.get_assumptions()
-                guarantees[pair_of_goals[1].get_name() + "_guarantees"] = contract_2.get_guarantees()
+                variables = merge_two_dicts(contract_1.get_variables(), contract_2.get_variables())
+
+                assumptions_set.extend(contract_2.get_assumptions())
+
+                guarantees_set.extend(contract_2.get_guarantees())
 
                 """Checking Consistency only when the assumptions are satisfied together"""
-                sat_1, model = sat_check(assumptions)
-                if sat_1:
+                sat = check_satisfiability(variables, list(set(assumptions_set)))
+                if sat:
                     """Checking Consistency only when the assumptions are satisfied together"""
-                    sat_2, model = sat_check(guarantees)
-                    if not sat_2:
+                    sat = check_satisfiability(variables, list(set(guarantees_set)))
+                    if not sat:
                         print("The assumptions in the conjunction of contracts are not mutually exclusive")
-                        print("Conflict with the following guarantees:\n" + str(model))
                         raise Exception("Conjunction Failed")
 
     print("The conjunction satisfiable.")
@@ -235,12 +236,12 @@ def propagate_assumptions(abstract_goal, refined_goal):
 
     for i, contract in enumerate(contracts_refined):
         """And(.....) of all the assumptions of the abstracted contract"""
-        assumptions_abs_z3 = contracts_abstracted[i].get_z3_assumptions()
+        assumptions_abs_ltl = contracts_abstracted[i].get_ltl_assumptions()
         """List of all the assumptions of the refined contract"""
         assumptions_ref = contract.get_assumptions()
         assumptions_to_add = []
         for assumption in assumptions_ref:
-            if not is_set_smaller_or_equal(assumptions_abs_z3, assumption):
+            if not is_set_smaller_or_equal(assumptions_abs_ltl, assumption):
                 assumptions_to_add.append(assumption)
 
         """Unify alphabets"""
@@ -309,27 +310,6 @@ def refine_goal(abstract_goal, refined_goal):
     print("The goals are now connected with each other")
 
 
-def get_z3_contract(goal):
-    contracts = goal.get_contracts()
-    variables = {}
-
-    if len(contracts) > 1:
-        assumptions_list = []
-        guarantee_list = []
-        for contract in contracts:
-            merge_two_dicts(variables, contract.get_variables())
-            assumptions_list.append(contract.get_z3_assumptions())
-            guarantee_list.append(contract.get_z3_guarantees())
-        assumption = Or(assumptions_list)
-        guarantee = And(guarantee_list)
-        return Contract(variables, [assumption], [guarantee])
-    else:
-        merge_two_dicts(variables, contracts[0].get_variables())
-        assumption = contracts[0].get_z3_assumptions()
-        guarantee = contracts[0].get_z3_guarantees()
-        return Contract(variables, [assumption], [guarantee])
-
-
 def compose_contracts(contracts):
     """
     :param contracts: dictionary of goals name and contract
@@ -343,47 +323,39 @@ def compose_contracts(contracts):
     else:
         raise WrongParametersError
 
-    composed_name = ""
     variables = {}
-    assumptions = {}
-    guarantees = {}
+    assumptions = []
+    guarantees = []
 
     for name, contract in list(contracts_dictionary.items()):
-        composed_name += name + "_"
-        merge_two_dicts(variables, contract.get_variables())
-        assumptions[name + "_assumptions"] = contract.get_assumptions()
-        guarantees[name + "_guarantees"] = contract.get_guarantees()
+        variables = merge_two_dicts(variables, contract.get_variables())
+        assumptions.extend(contract.get_assumptions())
+        guarantees.extend(contract.get_guarantees())
 
     # CHECK COMPATILITY
-    satis, model = sat_check(assumptions)
+    satis = check_satisfiability(variables, list(set(assumptions)))
     if not satis:
-        print(("Fix the following assumptions:\n" + str(model)))
+        print(str(list(set(assumptions))))
         raise Exception("The composition is uncompatible")
 
     # CHECK CONSISTENCY
-    satis, model = sat_check(guarantees)
+    satis = check_satisfiability(variables, list(set(guarantees)))
     if not satis:
-        print(("Fix the following guarantees:\n" + str(model)))
+        print(str(list(set(guarantees))))
         raise Exception("The composition is inconsistent")
 
-    # CHECK SATISFIABILITY
-    satis, model = sat_check(merge_two_dicts(assumptions, guarantees))
+    assumptions_guarantees = assumptions.copy()
+    assumptions_guarantees.extend(guarantees)
+
+    # CHECK FEASIBILITY
+    satis = check_satisfiability(variables, list(set(assumptions_guarantees)))
     if not satis:
-        print(("Fix the following conditions:\n" + str(model)))
-        raise Exception("The composition is unsatisfiable")
+        raise Exception("The composition is unfeasible")
 
     print("The composition is compatible, consistent and satisfiable. Composing now...")
 
-    a_composition = list(assumptions.values())
-    g_composition = list(guarantees.values())
-
-    # Flatting the lists
-    a_composition = [item for sublist in a_composition for item in sublist]
-    g_composition = [item for sublist in g_composition for item in sublist]
-
-    # Eliminating duplicates of assertions
-    a_composition = list(dict.fromkeys(a_composition))
-    g_composition = list(dict.fromkeys(g_composition))
+    a_composition = list(set(assumptions))
+    g_composition = list(set(guarantees))
 
     a_composition_simplified = a_composition[:]
     g_composition_simplified = g_composition[:]
@@ -393,13 +365,10 @@ def compose_contracts(contracts):
     # Compare each element in a_composition with each element in g_composition
     for a_elem in a_composition:
         for g_elem in g_composition:
-            if is_set_smaller_or_equal(a_elem, g_elem):
+            if is_set_smaller_or_equal(variables, variables, a_elem, g_elem):
                 print("Simplifying assumption " + str(a_elem))
                 a_composition_simplified.remove(a_elem)
                 g_elem_list.append(g_elem)
-
-    print(("Assumptions:\n\t\t" + str(a_composition_simplified)))
-    print(("Guarantees:\n\n\t\t" + str(g_composition_simplified)))
 
     composed_contract = Contract(variables=variables,
                                  assumptions=a_composition_simplified,

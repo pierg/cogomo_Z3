@@ -13,7 +13,7 @@ GOAL_DATA_INDENT = 2
 
 COMMENT_CHAR = '#'
 ASSIGNMENT_CHAR = ':='
-OPERATORS = '==|\*|\/|-|<=|>=|<|>|\+|!=|\(|\)'
+OPERATORS = '==|\*|\/|-|<=|>=|<|>|\+|!=|\(|\)|\||->|&'
 # OPERATORS = '<|>|!=| == | >= | <= | \|\| |&& | * '
 # OPERATORS = '<|>|!=|==|>=|<=|\|&&|*'
 
@@ -113,26 +113,16 @@ def parse(specfile):
                             contract.add_variable((var.strip(), init.strip()))
                         elif CONTRACT_ASSUMPTIONS_HEADER in goal_header:
                             list_of_variables = re.split(OPERATORS, line)
-                            list_stripped = []
-                            for elem in list_of_variables:
-                                stripped = elem.strip()
-                                if stripped is not '' and not _is_string_number(stripped):
-                                    list_stripped.append(stripped)
-                            for variable in list_stripped:
-                                regx = re.compile('\s' + variable + '|' + variable + '\s|' + variable + '$')
-                                line = regx.sub("self.variables['" + variable + "']", line)
-                            contract.add_assumption(line.strip())
+                            if len(list_of_variables) > 1:
+                                contract.add_assumption("(" + line.strip() + ")")
+                            else:
+                                contract.add_assumption(line.strip())
                         elif CONTRACT_GUARANTEES_HEADER in goal_header:
                             list_of_variables = re.split(OPERATORS, line)
-                            list_stripped = []
-                            for elem in list_of_variables:
-                                stripped = elem.strip()
-                                if stripped is not '' and not _is_string_number(stripped):
-                                    list_stripped.append(stripped)
-                            for variable in list_stripped:
-                                regx = re.compile('\s' + variable + '|' + variable + '\s|' + variable + '$')
-                                line = regx.sub("self.variables['" + variable + "']", line)
-                            contract.add_guarantee(line.strip())
+                            if len(list_of_variables) > 1:
+                                contract.add_guarantee("(" + line.strip() + ")")
+                            else:
+                                contract.add_guarantee(line.strip())
                         else:
                             raise Exception("Unexpected Goal Header")
 

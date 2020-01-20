@@ -1,31 +1,7 @@
-from z3 import *
-
+from src.sat_checks import *
 
 class Contract(object):
     """Contract class stores data attributes of a contract
-
-    We don't use the Or out of Z3 but we manually build a data structure to check that all the combination can be satisfiable
-    If we would do an OR for example here:
-
-    s = Solver()
-
-    x = Real('x')
-    z = Real('z')
-
-    s.assert_and_track(Or(x > 0, z > 100), 'a1')
-    s.assert_and_track(x < 0, 'a2')
-    print(s.check())
-    print(s.unsat_core())
-
-    We wouldn't see that the first case (x>0) can never be satisfiable
-
-    CoGoMO checks that as well
-
-    Attributes:
-        name: a string name for the contract
-        variables: a dictionary containing the string of the variable as key, and the Z3 variable as value
-        assumptions: a list of Z3 relations assumed by contract
-        guarantees: a list of Z3 relations relations guaranteed by contract
     """
 
     def __init__(self,
@@ -33,25 +9,28 @@ class Contract(object):
                  assumptions=None,
                  guarantees=None):
         """Initialize a contract object"""
+        self.variables = {}
+        self.assumptions = []
+        self.guarantees = []
+
+        if variables is None:
+            self.variables = {}
+        elif isinstance(variables, dict):
+            self.variables = variables
+        else:
+            raise Exception("Attribute Error")
 
         if guarantees is None:
             self.guarantees = []
         elif isinstance(guarantees, list):
-            self.guarantees = guarantees
+            self.add_guarantees(guarantees)
         else:
             raise Exception("Attribute Error")
 
         if assumptions is None:
             self.assumptions = []
         elif isinstance(assumptions, list):
-            self.assumptions = assumptions
-        else:
-            raise Exception("Attribute Error")
-
-        if variables is None:
-            self.variables = {}
-        elif isinstance(variables, dict):
-            self.variables = variables
+            self.add_assumptions(assumptions)
         else:
             raise Exception("Attribute Error")
 
@@ -61,12 +40,8 @@ class Contract(object):
         Args:param variable: a tuple of strings containing name of the variable and a its type
         """
         name, var_type = variable
-        if var_type == 'REAL':
-            self.variables[name] = Real(name)
-        elif var_type == 'BOOL':
-            self.variables[name] = Bool(name)
-        elif var_type == 'INT':
-            self.variables[name] = Int(name)
+        self.variables[name] = var_type
+
 
     def add_variables(self, variables):
         """Adds a list of variables to the contract variables
@@ -99,50 +74,61 @@ class Contract(object):
             self.add_assumption(assumption)
 
     def add_assumption(self, assumption):
-        """Adds an assumption to the contract assumptions
+        if isinstance(assumption, str) == False:
+            raise AttributeError
 
-        Args:
-            assumption: Z3 proposition where the variables are contained in self.variables
-        """
-        if isinstance(assumption, str):
-            if(assumption == '--'):
-                self.assumptions.append(True)
-            else:
-                self.assumptions.append(eval(assumption))
-        else:
-            self.assumptions.append(assumption)
+        """Check if assumption is a refinement of exising assumptions and vice-versa"""
+        for a in self.assumptions:
+            if is_set_smaller_or_equal(self.variables, self.variables, assumption, a):
+                self.assumptions.remove(a)
+            elif is_set_smaller_or_equal(self.variables, self.variables, a, assumption):
+                return
+
+        self.assumptions.append(assumption)
+
+        """Check Compatibility"""
+        if not check_satisfiability(self.variables, self.assumptions):
+            raise Exception("adding " + assumption + " resulted in a incompatible contract:\n" + str(self.assumptions))
+
 
     def add_guarantees(self, guarantees):
         for guarantee in guarantees:
             self.add_guarantee(guarantee)
 
     def add_guarantee(self, guarantee):
-        """Adds a guarantee to the contract guarantees
+        if isinstance(guarantee, str) == False:
+            raise AttributeError
 
-        Args:
-            guarantee: Z3 proposition where the variables are contained in self.variables
-        """
-        if isinstance(guarantee, str):
-            self.guarantees.append(eval(guarantee))
-        else:
-            self.guarantees.append(guarantee)
+        """Check if guarantee is a refinement of exising gurantee and vice-versa"""
+        for g in self.guarantees:
+            if is_set_smaller_or_equal(self.variables, self.variables, guarantee, g):
+                self.guarantees.remove(g)
+            elif is_set_smaller_or_equal(self.variables, self.variables, g, guarantee):
+                return
+
+        self.guarantees.append(guarantee)
+
+        """Check Consistency"""
+        if not check_satisfiability(self.variables, self.guarantees):
+            raise Exception("adding " + guarantee + " resulted in a inconsistent contract:\n" + str(self.guarantees))
+
 
     def get_assumptions(self):
         return self.assumptions
 
-    def get_z3_assumptions(self):
+    def get_ltl_assumptions(self):
         if len(self.assumptions) > 1:
             return And(self.assumptions)
         else:
             return self.assumptions[0]
 
-    def get_z3_guarantees(self):
+    def get_ltl_guarantees(self):
         if len(self.guarantees) > 1:
             # return And(self.guarantees)
-            return Implies(self.get_z3_assumptions(), And(self.guarantees))
+            return Implies(self.get_ltl_assumptions(), And(self.guarantees))
         else:
             # return self.guarantees[0]
-            return Implies(self.get_z3_assumptions(), self.guarantees[0])
+            return Implies(self.get_ltl_assumptions(), self.guarantees[0])
 
     def get_guarantees(self):
 
@@ -171,14 +157,10 @@ class Contract(object):
         return la / lg
 
 
-    def is_abstracted(self):
-        return False
-
 
     def __str__(self):
         """Override the print behavior"""
-        astr = '[\n  name: [ ' + self.name + ' ]\n'
-        astr += '  variables: [ '
+        astr = '  variables: [ '
         for var in self.variables:
             astr += '(' + var + '), '
         astr = astr[:-2] + ' ]\n  assumptions: [ '

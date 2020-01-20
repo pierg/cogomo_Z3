@@ -1,119 +1,123 @@
 import re
+import subprocess
 
-from z3 import *
-
-
-def sat_check(propositions_dictionary):
-    """Check the satisfiability of the keys of the dictionary passed
-    If satisfiabile it returns True and an assignment example
-    If insatisfiabile it returns False and the list of elements generating the insatisfiability (unsat_core)"""
-
-    s = Optimize()
-
-    for name, value in list(propositions_dictionary.items()):
-        if isinstance(value, list):
-            for elem in value:
-                prop_strign = name + ": " + str(elem)
-                s.assert_and_track(elem, Bool(prop_strign))
-        else:
-            prop_strign = name + ": " + str(value)
-            s.assert_and_track(value, Bool(prop_strign))
-
-    r = s.check()
-
-    if r == sat:
-        # print("The formula is satisfiable")
-        return True, s.model()
-    elif r == unknown:
-        print("Failed to prove")
-        print((s.model()))
-        raise Exception("Failed to prove")
-    else:
-        # print("The formula is unsatisfiable")
-        return False, s.unsat_core()
+smvfile = "nusmvfile.smv"
 
 
-def sat_check_simple(list_propositions):
-    s = Optimize()
-
-    for prop in list_propositions:
-        s.add(prop)
-
-    r = s.check()
-
-    if r == sat:
-        return True
-    elif r == unknown:
-        print("Failed to prove")
-        print((s.model()))
-        raise Exception("Failed to prove")
-    else:
-        return False
+def And(list_propoositions):
+    """Returns a string representing the logical AND of list_propoositions"""
+    ret = ""
+    for i, elem in enumerate(list_propoositions):
+        ret += elem
+        if i < len(list_propoositions)-1:
+            ret += " & "
+    return ret
 
 
-def z3_validity_check(z3_formula):
-    s = Solver()
-
-    s.add(Not(z3_formula))
-
-    r = s.check()
-
-    if r == unsat:
-        # print("the formula is proven, no counterexample found")
-        return True, None
-    elif r == unknown:
-        # print("failed to prove")
-        # print((s.model()))
-        raise Exception("failed to prove")
-    else:
-        # print("counterexample")
-        # print((s.model()))
-        return False, s.model()
+def Or(list_propoositions):
+    """Returns a string representing the logical OR of list_propoositions"""
+    ret = "("
+    for i, elem in enumerate(list_propoositions):
+        ret += elem
+        if i < len(list_propoositions)-1:
+            ret += " | "
+    ret += ")"
+    return ret
 
 
-def check_ports_are_compatible(prop_1, prop_2):
+def Implies(prop_1, prop_2):
+    """Returns a string representing the logical IMPLIES of prop_1 and prop_2"""
+    return '(' + prop_1 + ' -> ' + prop_2 + ')'
+
+
+def Not(prop):
+    """Returns a string representing the logical NOT of prop"""
+    return '! (' + prop + ' )'
+
+
+
+
+def check_satisfiability(variables, propositions):
+    """Write the NuSMV file"""
+    with open(smvfile, 'w') as ofile:
+
+        # write module heading declaration
+        ofile.write('MODULE main\n')
+
+        # write variable type declarations
+        ofile.write('VAR\n')
+        for name, type in variables.items():
+            ofile.write('\t' + name + ': ' + type + ';\n')
+
+        ofile.write('\n')
+
+        ofile.write('LTLSPEC ')
+
+        ofile.write(Not(And(propositions)))
+
+        ofile.write('\n')
+
+
+    output = subprocess.check_output(['NuSMV', smvfile], encoding='UTF-8').splitlines()
+
+    output = [x for x in output if not (x[:3] == '***' or x[:7] == 'WARNING' or x == '')]
+
+    for line in output:
+
+        if line[:16] == '-- specification':
+            if 'is false' in line:
+                return True
+            elif 'is true' in line:
+                return False
+
+
+def check_validity(variables, proposition):
+    """Write the NuSMV file"""
+    with open(smvfile, 'w') as ofile:
+
+        # write module heading declaration
+        ofile.write('MODULE main\n')
+
+        # write variable type declarations
+        ofile.write('VAR\n')
+        for name, type in variables.items():
+            ofile.write('\t' + name + ': ' + type + ';\n')
+
+        ofile.write('\n')
+
+        ofile.write('LTLSPEC ' + proposition)
+
+    output = subprocess.check_output(['NuSMV', smvfile], encoding='UTF-8').splitlines()
+
+    output = [x for x in output if not (x[:3] == '***' or x[:7] == 'WARNING' or x == '')]
+
+    for line in output:
+
+        if line[:16] == '-- specification':
+            if 'is false' in line:
+                return False
+            elif 'is true' in line:
+                return True
+
+
+
+def check_ports_are_compatible(prop_1_names, prop_2_names):
     """Returns True if the two propositions or list of propositions share at least one port (variable)"""
 
-    prop_1_names = []
-    prop_2_names = []
+    if not isinstance(prop_1_names, list):
+        prop_1_names = [prop_1_names]
 
-    if isinstance(prop_1, BoolRef):
-        prop_1 = [prop_1]
-    if isinstance(prop_2, BoolRef):
-        prop_2 = [prop_2]
-
-    for elem in prop_1:
-        if not isinstance(elem, BoolRef):
-            raise Exception("Attribute Error")
-
-        list_var = re.split('(?<![A-Za-z0-9.])[0-9.]+|[\s\W]|(?<![\w\d])True(?![\w\d])|(?<![\w\d])False(?![\w\d])', str(elem))
-
-        for var in list_var:
-            stripped = var.strip()
-            if stripped is not '':
-                prop_1_names.append(stripped)
-
-    for elem in prop_2:
-        if not isinstance(elem, BoolRef):
-            raise Exception("Attribute Error")
-
-        list_var = re.split('(?<![A-Za-z0-9.])[0-9.]+|[\s\W]|(?<![\w\d])True(?![\w\d])|(?<![\w\d])False(?![\w\d])', str(elem))
-
-        for var in list_var:
-            stripped = var.strip()
-            if stripped is not '':
-                prop_2_names.append(stripped)
+    if not isinstance(prop_2_names, list):
+        prop_2_names = [prop_2_names]
 
     for var_names_1 in prop_1_names:
         for var_names_2 in prop_2_names:
             if var_names_1 == var_names_2:
                 return True
-
     return False
 
 
-
-def is_set_smaller_or_equal(props_refined, props_abstracted):
+def is_set_smaller_or_equal(variables_refined, variables_abstracted, props_refined, props_abstracted):
     """
     Checks if the conjunction of props_refined is contained in the conjunction of props_abstracted, i.e. prop_2 is a bigger set
     :param props_refined: single proposition or list of propositions
@@ -124,12 +128,11 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
     if props_abstracted is False:
         return True
 
-    if check_ports_are_compatible(props_refined, props_abstracted) is False:
+    if check_ports_are_compatible(variables_refined.keys(), variables_abstracted.keys()) is False:
         return False
 
     refinement = None
     abstract = None
-
 
     """Check Attributes"""
     if isinstance(props_refined, list):
@@ -137,7 +140,7 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
             refinement = props_refined[0]
         else:
             refinement = And(props_refined)
-    elif isinstance(props_refined, BoolRef):
+    elif isinstance(props_refined, str):
         refinement = props_refined
 
     if isinstance(props_abstracted, list):
@@ -145,13 +148,18 @@ def is_set_smaller_or_equal(props_refined, props_abstracted):
             abstract = props_abstracted[0]
         else:
             abstract = And(props_abstracted)
-    elif isinstance(props_abstracted, BoolRef):
+    elif isinstance(props_abstracted, str):
         abstract = props_abstracted
 
-    result, model = z3_validity_check(Implies(refinement, abstract))
+    result = check_validity(merge_two_dicts(variables_abstracted, variables_refined), Implies(refinement, abstract))
 
     if result:
         print("\t\t\trefined:\t" + str(refinement) + "\n\t\t\tabstract:\t" + str(abstract))
 
     return result
 
+
+def merge_two_dicts(x, y):
+    z = x.copy()
+    z.update(y)
+    return z

@@ -75,13 +75,9 @@ class CGTGoal:
             if n > 0:
                 ret += "\t" * level + "\t/\\ \n"
             ret += "\t" * level + "A:\t\t" + \
-                   ', '.join(str(x) for x in contract.get_assumptions()).replace('\n', ' ').replace(' ', '') + "\n"
+                   ' & '.join(str(x) for x in contract.get_assumptions()).replace('\n', ' ') + "\n"
             ret += "\t" * level + "G:\t\t" + \
-                   ', '.join(str(x) for x in contract.get_guarantees()).replace('\n', ' ').replace(' ', '') + "\n"
-            # if contract.is_abstracted():
-            #     ret += "\t" * level + "G_abs:\t" + \
-            #            ', '.join(str(x) for x in contract.get_abstract_guarantees()).replace('\n', ' ').replace(' ',
-            #                                                                                                     '') + "\n"
+                   ' & '.join(str(x) for x in contract.get_guarantees()).replace('\n', ' ') + "\n"
         ret += "\n"
         if self.sub_goals is not None and len(self.sub_goals) > 0:
             ret += "\t" * level + "\t" + self.sub_operation + "\n"
