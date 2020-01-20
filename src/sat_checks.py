@@ -134,7 +134,8 @@ def is_set_smaller_or_equal(variables_refined, variables_abstracted, props_refin
     if props_abstracted is False:
         return True
 
-    if check_ports_are_compatible(variables_refined.keys(), variables_abstracted.keys()) is False:
+
+    if check_ports_are_compatible(list(variables_refined.keys()), list(variables_abstracted.keys())) is False:
         return False
 
     refinement = None

@@ -48,8 +48,11 @@ class Contract(object):
 
         :param variables: list of tuple of strings each containing name of the variable and a its type
         """
-        for variable in variables:
-            self.add_variable(variable)
+        if isinstance(variables, tuple):
+            for variable in variables:
+                self.add_variable(variable)
+        elif isinstance(variables, dict):
+            self.variables.update(variables)
 
 
     def merge_variables(self, variables_dictionary):

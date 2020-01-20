@@ -86,7 +86,7 @@ class ComponentsLibrary:
     def get_components(self):
         return self.list_of_components
     
-    def extract_selection(self, assumptions, to_be_refined):
+    def extract_selection(self, variables, assumptions, to_be_refined):
         """
         Extract all candidate compositions in the library that once combined refine 'to_be_refined'
         and are consistent with assumptions
@@ -102,7 +102,7 @@ class ComponentsLibrary:
             """Check if any component refine the to_be_refined"""
             for component in self.get_components():
 
-                if is_set_smaller_or_equal(component.get_guarantees(), proposition):
+                if is_set_smaller_or_equal(component.get_variables(), variables, component.get_guarantees(), proposition):
 
                     """Check Assumptions Consistency"""
                     if len(assumptions) > 0:
@@ -157,12 +157,14 @@ def incomposable_check(list_contracts):
     if not isinstance(list_contracts, list):
         raise Exception("Wrong Parameter")
 
+    variables = {}
     propositions = set([])
 
     for contract in list_contracts:
+        variables.update(contract.get_variables())
         for elem in contract.get_assumptions():
             propositions.add(elem)
         for elem in contract.get_guarantees():
             propositions.add(elem)
 
-    return not sat_check_simple(propositions)
+    return not check_satisfiability(variables, list(propositions))

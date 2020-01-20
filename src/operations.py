@@ -149,13 +149,14 @@ def components_selection(component_library, specification):
     if not isinstance(specification, Contract):
         raise Exception("Attribute Error")
 
+    spec_variables = specification.get_variables()
     spec_assumptions = specification.get_assumptions()
     spec_guarantees = specification.get_guarantees()
 
     set_components_to_return = []
 
     try:
-        candidates_compositions = component_library.extract_selection(spec_assumptions, spec_guarantees)
+        candidates_compositions = component_library.extract_selection(spec_variables, spec_assumptions, spec_guarantees)
     except Exception as e:
         print("No refinement possible")
         print(e)
@@ -182,11 +183,14 @@ def components_selection(component_library, specification):
             components_to_search.remove(component)
             component_already_searched.append(component)
 
+            component_variables = component.get_variables()
             component_assumptions = component.get_assumptions()
+
+            variables = merge_two_dicts(component_variables, spec_variables)
 
             """Extract all candidate compositions that can provide the assumptions, if they exists"""
             try:
-                candidates_compositions = component_library.extract_selection(spec_assumptions, component_assumptions)
+                candidates_compositions = component_library.extract_selection(variables, spec_assumptions, component_assumptions)
             except Exception as e:
                 print(e)
                 print("No selection found")
@@ -278,9 +282,9 @@ def is_refinement_correct(refined_contract, abstracted_contract):
     Check if A1 >= A2 and if G1 <= G2
     """
 
-    a_check = is_set_smaller_or_equal(abstracted_contract.get_assumptions(), refined_contract.get_assumptions())
+    a_check = is_set_smaller_or_equal(refined_contract.get_variables(), abstracted_contract.get_variables(), abstracted_contract.get_assumptions(), refined_contract.get_assumptions())
 
-    g_check = is_set_smaller_or_equal(refined_contract.get_guarantees(), abstracted_contract.get_guarantees())
+    g_check = is_set_smaller_or_equal(abstracted_contract.get_variables(), refined_contract.get_variables(), refined_contract.get_guarantees(), abstracted_contract.get_guarantees())
 
     return a_check and g_check
 
@@ -398,8 +402,10 @@ def greedy_selection(candidate_compositions):
         cost = 0
         for component in composition:
             cost += component.cost()
+            """Adding a cost for the number of components"""
+            cost += 0.1
         if cost < lowest_cost:
-            best_candidates.append(composition)
+            best_candidates = [composition]
         elif cost == lowest_cost:
             best_candidates.append(composition)
 
@@ -425,10 +431,12 @@ def greedy_selection(candidate_compositions):
             contract_b = Contract()
 
             for component_a in candidate_a:
+                contract_a.add_variables(component_a.get_variables())
                 contract_a.add_assumptions(component_a.get_assumptions())
                 contract_a.add_guarantees(component_a.get_guarantees())
 
             for component_b in candidate_b:
+                contract_b.add_variables(component_b.get_variables())
                 contract_b.add_assumptions(component_b.get_assumptions())
                 contract_b.add_guarantees(component_b.get_guarantees())
 
