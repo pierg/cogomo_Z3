@@ -1,0 +1,81 @@
+Input:
+Designer specifies the mission:
+Take an heavy item (HI) from location locA and bring it to location locB
+Using patterns with composition and conjunction operations among them
+
+In this example we'll only use the composition:
+Given C1 = (A1, G1) and C2 = (A2, G2)
+Their composition C1 || C2 = C = (A, G) will have:
+A = A1 & A1 | !(G1 & G2)
+G = G1 & G2
+(after having saturated all the contracts, that is each G = G | !A)
+
+Deployment Context (will populate the assumptions):
+HeavyItemWeight       = 8
+WeightPower(Robot_1)  = 5kg
+WeightPower(Robot_2)  = 5kg
+
+Each pattern will be instanciated with an A/G contact.
+The assumptions can either be environmental (e.g. physics assumptions) or contextual (e.g. robot can weight 5 kg)
+Thee guarantees are those written in the patterns paper
+
+OrderVisit(locA, locB)                      C_1
+A_env:  G((!locA & locB) | (locA & !locB))
+A_ctx:  --
+G:      F(locA & F(locB)) & !locB U locA
+
+DelayedReaction(locA, HI_pickedup)          C_2
+A_ctx:  WeightPower >= 8
+G:      G(locA -> F HI_pickedup)
+
+Wait(locA, WeightPower >= HeavyItemWeight)  C_3
+A_ctx:  WeightPower < 8
+G:      HI_location U (WeightPower >= 8)
+
+
+The composition of C_1 || C_2 || C_3 = C_comp will result in:
+A_comp: G((!locA & locB) | (locA & !locB)) & WeightPower >= 8 & WeightPower < 8 | ! (F(locA & F(locB)) & !locB U locA & G(locA -> F HI_pickedup) &  HI_location U (WeightPower >= 8))
+G_comp: F(locA & F(locB)) & !locB U locA & G(locA -> F HI_pickedup) &  HI_location U (WeightPower >= 8)
+
+In a tree structure C_comp is the root and C_1, C_2, C_3 the leaf nodes.
+
+The assumption of C_2 (WeightPower >= 8) can not be met by the current context but it can be 'relaxed' by further composing with the contract:
+
+Cooperate(Robot_1, Robot_2)     C_c
+A_ctx:  Robot_1 & Robot 2
+G:      WeightPower >=10 & WeightPower <= 15
+
+Infact C_c || C_2 = C_2c will result in:
+A:      WeightPower >= 8 | WeightPower < 10 | WeightPower > 15 = TRUE
+G:      G(locA -> F HI_pickedup) & (WeightPower >=10 & WeightPower <= 15)
+
+So the new tree will be the results of the composition of C_1, C_2, C_3 and C_c
+
+Under these new assumptions the mission can be instanciated in the deployement context and a plan can be generated
+
+
+
+PS:
+
+The last contract can also be composed automatically by the component selection algorithm of Cogomo.
+Let's assume we have the a library of contracts:
+
+Robot_1                         C_a
+A:  --
+G:  Robot_1
+
+Robot_2                         C_b
+A:  --
+G:  Robot_2
+
+Cooperate(Robot_1, Robot_2)     C_c
+A_ctx:  Robot_1 & Robot 2
+G:      WeightPower > 5 & WeightPower < 10
+
+A specification S can be automatically mapped to a select`ion of contracts that when composed refine S
+(Ex. S = WeightPower >= 8)
+
+
+
+
+

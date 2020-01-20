@@ -190,7 +190,8 @@ def components_selection(component_library, specification):
 
             """Extract all candidate compositions that can provide the assumptions, if they exists"""
             try:
-                candidates_compositions = component_library.extract_selection(variables, spec_assumptions, component_assumptions)
+                candidates_compositions = component_library.extract_selection(variables, spec_assumptions,
+                                                                              component_assumptions)
             except Exception as e:
                 print(e)
                 print("No selection found")
@@ -209,7 +210,6 @@ def components_selection(component_library, specification):
             for comp in new_selected_components:
                 if comp not in component_already_searched:
                     components_to_search.append(comp)
-
 
     """Flattening list of selections and eliminating duplicates"""
     flat_list_refining_components = list(set([item for sublist in set_components_to_return for item in sublist]))
@@ -276,15 +276,16 @@ def is_a_refinement(refined_contract, abstracted_contract):
     return a_check and g_check
 
 
-
 def is_refinement_correct(refined_contract, abstracted_contract):
     """
     Check if A1 >= A2 and if G1 <= G2
     """
 
-    a_check = is_set_smaller_or_equal(refined_contract.get_variables(), abstracted_contract.get_variables(), abstracted_contract.get_assumptions(), refined_contract.get_assumptions())
+    a_check = is_set_smaller_or_equal(refined_contract.get_variables(), abstracted_contract.get_variables(),
+                                      abstracted_contract.get_assumptions(), refined_contract.get_assumptions())
 
-    g_check = is_set_smaller_or_equal(abstracted_contract.get_variables(), refined_contract.get_variables(), refined_contract.get_guarantees(), abstracted_contract.get_guarantees())
+    g_check = is_set_smaller_or_equal(abstracted_contract.get_variables(), refined_contract.get_variables(),
+                                      refined_contract.get_guarantees(), abstracted_contract.get_guarantees())
 
     return a_check and g_check
 
@@ -380,6 +381,7 @@ def compose_contracts(contracts):
     return composed_contract
 
 
+
 def greedy_selection(candidate_compositions):
     """
     Scan all the possible compositions and compute costs for each of them,
@@ -446,7 +448,6 @@ def greedy_selection(candidate_compositions):
                 candidates_points[tuple(candidate_b)] += 1
 
             n_comparisons += 1
-
 
         print(str(n_comparisons) + " comparisons have been made")
         """Extract the candidate with the highest score (the most refined)"""

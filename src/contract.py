@@ -82,6 +82,8 @@ class Contract(object):
 
         """Check if assumption is a refinement of exising assumptions and vice-versa"""
         for a in self.assumptions:
+            if same_variable(a, assumption):
+                continue
             if is_set_smaller_or_equal(self.variables, self.variables, assumption, a):
                 self.assumptions.remove(a)
             elif is_set_smaller_or_equal(self.variables, self.variables, a, assumption):
@@ -174,3 +176,10 @@ class Contract(object):
             astr += str(guarantee) + ', '
         return astr[:-2] + ' ]\n]'
 
+
+
+def same_variable(var_a, var_b):
+    var_a = re.sub("_port_\d+", "", var_a)
+    var_b = re.sub("_port_\d+", "", var_b)
+
+    return var_a == var_b

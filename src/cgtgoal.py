@@ -1,5 +1,3 @@
-from src.contract import Contract
-
 
 class CGTGoal:
     """

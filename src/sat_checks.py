@@ -10,7 +10,7 @@ def And(list_propoositions):
         ret = ""
         for i, elem in enumerate(list_propoositions):
             ret += elem
-            if i < len(list_propoositions)-1:
+            if i < len(list_propoositions) - 1:
                 ret += " & "
         return ret
     else:
@@ -23,7 +23,7 @@ def Or(list_propoositions):
         ret = "("
         for i, elem in enumerate(list_propoositions):
             ret += elem
-            if i < len(list_propoositions)-1:
+            if i < len(list_propoositions) - 1:
                 ret += " | "
         ret += ")"
         return ret
@@ -41,9 +41,14 @@ def Not(prop):
     return '! (' + prop + ')'
 
 
-
-
 def check_satisfiability(variables, propositions):
+
+    propositions_copy = propositions.copy()
+
+    for index, prop in enumerate(propositions_copy):
+        """Renaming propositions"""
+        propositions_copy[index] = re.sub("_port_\d+", "", prop)
+
     """Write the NuSMV file"""
     with open(smvfile, 'w') as ofile:
 
@@ -59,10 +64,9 @@ def check_satisfiability(variables, propositions):
 
         ofile.write('LTLSPEC ')
 
-        ofile.write(Not(And(propositions)))
+        ofile.write(Not(And(propositions_copy)))
 
         ofile.write('\n')
-
 
     output = subprocess.check_output(['NuSMV', smvfile], encoding='UTF-8').splitlines()
 
@@ -78,6 +82,10 @@ def check_satisfiability(variables, propositions):
 
 
 def check_validity(variables, proposition):
+
+    """Renaming propositions"""
+    proposition_copy = re.sub("_port_\d+", "", proposition)
+
     """Write the NuSMV file"""
     with open(smvfile, 'w') as ofile:
 
@@ -91,7 +99,7 @@ def check_validity(variables, proposition):
 
         ofile.write('\n')
 
-        ofile.write('LTLSPEC ' + proposition)
+        ofile.write('LTLSPEC ' + proposition_copy)
 
     output = subprocess.check_output(['NuSMV', smvfile], encoding='UTF-8').splitlines()
 
@@ -104,7 +112,6 @@ def check_validity(variables, proposition):
                 return False
             elif 'is true' in line:
                 return True
-
 
 
 def check_ports_are_compatible(prop_1_names, prop_2_names):
@@ -133,7 +140,6 @@ def is_set_smaller_or_equal(variables_refined, variables_abstracted, props_refin
 
     if props_abstracted is False:
         return True
-
 
     if check_ports_are_compatible(list(variables_refined.keys()), list(variables_abstracted.keys())) is False:
         return False
