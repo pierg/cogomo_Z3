@@ -117,7 +117,7 @@ def gen_file(n_props, n_comps):
                     "looking for proposition {2}/{3} (p{4})')"
                     "\n".format(n_prop, n_comp, i+1, len(pool_of_guarantees), g))
             f.write("    start_time = time.time()\n")
-            f.write("    n = len(components_selection(component_library, "
+            f.write("    n = len(mapping(component_library, "
                     "Contract(assumptions=[], guarantees=[p{0} == True])))\n".format(str(g)))
             f.write("""\
     elapsed_time = time.time() - start_time

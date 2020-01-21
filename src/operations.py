@@ -142,7 +142,7 @@ def prioritize_goal(first_priority_goal, second_priority_goal):
     print(second_priority_goal)
 
 
-def components_selection(component_library, specification):
+def mapping(component_library, specification):
     if not isinstance(component_library, ComponentsLibrary):
         raise Exception("Attribute Error")
 

@@ -89,4 +89,4 @@ specification = Contract(
                 Implies(distance_front <= distance_real, (distance_real - distance_front) <= Delta_m)]
 )
 
-components_selection(component_library, specification)
+mapping(component_library, specification)

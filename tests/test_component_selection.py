@@ -25,7 +25,7 @@ specification = Contract(assumptions=spec_a, guarantees=spec_g)
 
 def run_2_4():
     start_time = time.time()
-    components_selection(component_library, specification)
+    mapping(component_library, specification)
     elapsed_time = time.time() - start_time
     return elapsed_time
 
